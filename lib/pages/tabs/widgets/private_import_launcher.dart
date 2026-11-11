@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
-import '../../../data/services/yt_dlp_service.dart';
+import '../../../data/services/local_media_service.dart';
 import 'private_import_sheet.dart';
 
 Future<bool> showPrivateImportSheet(
   BuildContext context, {
-  YtDlpService? service,
+  LocalMediaService? service,
 }) async {
   final bool? imported = await showModalBottomSheet<bool>(
     context: context,
@@ -15,7 +15,9 @@ Future<bool> showPrivateImportSheet(
     enableDrag: false,
     backgroundColor: Colors.transparent,
     builder: (BuildContext sheetContext) {
-      return PrivateImportSheet(service: service ?? DirectYtDlpService());
+      return PrivateImportSheet(
+        service: service ?? FilePickerLocalMediaService(),
+      );
     },
   );
   return imported ?? false;

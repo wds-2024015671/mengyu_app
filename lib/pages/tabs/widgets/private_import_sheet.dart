@@ -1,102 +1,71 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/errors/app_exception.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../data/services/yt_dlp_service.dart';
+import '../../../data/services/local_media_service.dart';
 import '../../../models/private_media.dart';
 import '../../../providers/private_media_provider.dart';
 import '../../../widgets/primary_button.dart';
-import 'import_cancel_dialog.dart';
 import 'import_media_controls.dart';
-import 'private_import_runner.dart';
+
 class PrivateImportSheet extends StatefulWidget {
   const PrivateImportSheet({super.key, required this.service});
-  final YtDlpService service;
+
+  final LocalMediaService service;
+
   @override
   State<PrivateImportSheet> createState() => _PrivateImportSheetState();
 }
+
 class _PrivateImportSheetState extends State<PrivateImportSheet> {
-  final TextEditingController _link = TextEditingController();
   PrivateMediaType _type = PrivateMediaType.audio;
-  PrivateMediaStatus _phase = PrivateMediaStatus.ready;
-  ParsedMediaInfo? _parsed;
-  late final PrivateImportRunner _runner;
-  double _progress = 0;
+  File? _file;
   String? _error;
-  bool _duplicate = false;
   bool _busy = false;
-  bool get _downloading => _phase == PrivateMediaStatus.downloading && _busy;
-  bool get _parsing => _busy && _parsed == null;
-  @override
-  void initState() {
-    super.initState();
-    _runner = PrivateImportRunner(widget.service);
-  }
-  @override
-  void dispose() {
-    _runner.cancel();
-    _link.dispose();
-    super.dispose();
-  }
-  Future<void> _paste() async {
-    final ClipboardData? data = await Clipboard.getData(Clipboard.kTextPlain);
-    final String? text = data?.text;
-    if (text != null && text.isNotEmpty && mounted) {
-      _link.text = text.trim();
-      setState(() => _error = null);
+
+  Future<void> _pick() async {
+    setState(() => _error = null);
+    try {
+      final File? picked = await widget.service.pick(_type);
+      if (mounted && picked != null) {
+        setState(() => _file = picked);
+      }
+    } catch (error) {
+      if (mounted) {
+        setState(() => _error = AppException.describe(error, fallback: '无法打开文件选择器'));
+      }
     }
   }
+
   Future<void> _start() async {
-    final String url = _link.text.trim();
-    if (DirectYtDlpService.validateMediaUrl(url) == null) {
-      setState(() => _error = '请输入有效的 http(s) 链接');
+    final File? source = _file;
+    if (source == null) {
+      setState(() => _error = '请先选择本地音频或视频');
       return;
     }
-    final PrivateMediaProvider provider = context.read<PrivateMediaProvider>();
-    final bool duplicate = await provider.existsByUrl(url);
-    if (!mounted) return;
     setState(() {
-      _duplicate = duplicate;
       _busy = true;
-      _phase = PrivateMediaStatus.downloading;
       _error = null;
-      _parsed = null;
-      _progress = 0;
     });
+    final PrivateMediaProvider provider = context.read<PrivateMediaProvider>();
     try {
-      final PrivateImportRun run = await _runner.run(
-        url: url,
-        type: _type,
-        onParsed: (ParsedMediaInfo media) {
-          if (mounted) {
-            setState(() => _parsed = media);
-          }
-        },
-        onProgress: (double value) {
-          if (mounted) {
-            setState(() => _progress = value);
-          }
-        },
-      );
-      if (!mounted) {
-        return;
-      }
+      final PickedLocalMedia picked = await widget.service.import(source, _type);
       final bool saved = await provider.importMedia(
         PrivateMedia(
           id: 0,
           type: _type,
-          title: run.media.title,
-          sourceUrl: run.media.url,
-          localPath: run.file.path,
-          durationMs: run.media.durationMs,
-          platform: run.media.platform,
-          fileSize: run.fileSize,
+          title: picked.title,
+          sourceUrl: picked.source.path,
+          localPath: picked.file.path,
+          durationMs: picked.durationMs,
+          platform: '本地',
+          fileSize: picked.fileSize,
           status: PrivateMediaStatus.ready,
           createdAt: DateTime.now(),
-          thumbUrl: run.media.thumbnailUrl,
         ),
       );
       if (!mounted) {
@@ -112,32 +81,11 @@ class _PrivateImportSheetState extends State<PrivateImportSheet> {
       }
       setState(() {
         _busy = false;
-        _phase = PrivateMediaStatus.failed;
-        _error = AppException.describe(error, fallback: '解析或下载失败，请重试');
+        _error = AppException.describe(error, fallback: '导入失败，请重试');
       });
     }
   }
-  Future<void> _cancelDownload() async {
-    _runner.cancel();
-    setState(() {
-      _busy = false;
-      _phase = PrivateMediaStatus.failed;
-      _progress = 0;
-      _error = '已取消下载';
-    });
-  }
-  Future<void> _close() async {
-    if (_busy || _downloading) {
-      final bool close = await confirmCancelDownload(context);
-      if (!close) {
-        return;
-      }
-      _runner.cancel();
-    }
-    if (mounted) {
-      Navigator.pop(context, false);
-    }
-  }
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -146,7 +94,7 @@ class _PrivateImportSheetState extends State<PrivateImportSheet> {
       ),
       child: Container(
         constraints: BoxConstraints(
-          maxHeight: MediaQuery.sizeOf(context).height * 0.92,
+          maxHeight: MediaQuery.sizeOf(context).height * 0.9,
         ),
         decoration: BoxDecoration(
           color: context.c.sheet,
@@ -173,67 +121,53 @@ class _PrivateImportSheetState extends State<PrivateImportSheet> {
                     ),
                     IconButton(
                       tooltip: '关闭',
-                      onPressed: _close,
+                      onPressed: _busy ? null : () => Navigator.pop(context, false),
                       icon: Icon(Icons.close, color: context.c.textSecondary),
                     ),
                   ],
                 ),
                 const SizedBox(height: AppSpacing.xs),
                 Text(
-                  '粘贴视频链接，解析后下载音频或视频',
+                  '选择手机里的音频或视频，保存到私人库',
                   style: context.s.caption,
                 ),
                 const SizedBox(height: AppSpacing.lg),
-                ImportLinkField(
-                  controller: _link,
-                  onPaste: _paste,
+                ImportFileCard(
+                  file: _file,
+                  type: _type,
+                  onPick: _pick,
                   enabled: !_busy,
                 ),
                 if (_error != null) ...<Widget>[
                   const SizedBox(height: AppSpacing.xs),
-                  ImportErrorBox(message: _error!, onRetry: _start),
+                  ImportErrorBox(
+                    message: _error!,
+                    onRetry: _file == null ? _pick : _start,
+                  ),
                 ],
                 const SizedBox(height: AppSpacing.md),
                 ImportFormatSelector(
                   type: _type,
                   onChanged: (PrivateMediaType value) {
                     if (!_busy) {
-                      setState(() => _type = value);
+                      setState(() {
+                        _type = value;
+                        _file = null;
+                        _error = null;
+                      });
                     }
                   },
                   enabled: !_busy,
                 ),
-                if (_parsed != null) ...<Widget>[
-                  const SizedBox(height: AppSpacing.md),
-                  ImportParsedCard(media: _parsed!),
-                ],
-                if (_duplicate) ...<Widget>[
-                  const SizedBox(height: AppSpacing.xs),
-                  Text(
-                    '这个链接已在私人库，可以重新下载一份。',
-                    style: context.s.micro.copyWith(color: context.c.textTertiary),
-                  ),
-                ],
-                if (_downloading) ...<Widget>[
-                  const SizedBox(height: AppSpacing.md),
-                  ImportProgress(
-                    progress: _progress,
-                    onCancel: _cancelDownload,
-                  ),
-                ],
                 const SizedBox(height: AppSpacing.lg),
                 PrimaryButton(
-                  label: _parsing
-                      ? '解析中…'
-                      : _downloading
-                          ? '下载中…'
-                          : '解析并下载',
+                  label: _busy ? '导入中…' : '导入私人库',
                   loading: _busy,
                   onPressed: _busy ? null : _start,
                 ),
                 const SizedBox(height: AppSpacing.sm),
                 Text(
-                  '支持 Bilibili / YouTube / 抖音等公开链接 · 文件保存在本地\n'
+                  '文件只复制到 App 私有目录，不上传服务器\n'
                   '请确认你拥有相应的使用权',
                   style: context.s.micro.copyWith(
                     color: context.c.textTertiary,

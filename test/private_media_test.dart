@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mengyu_app/data/repositories/private_media_repository.dart';
-import 'package:mengyu_app/data/services/yt_dlp_service.dart';
 import 'package:mengyu_app/models/private_media.dart';
 import 'package:mengyu_app/pages/tabs/widgets/sound_list_entry.dart';
 import 'package:mengyu_app/providers/private_media_provider.dart';
@@ -68,32 +67,6 @@ void main() {
     expect(formatMediaDuration(3723000), '01:02:03');
     expect(formatMediaDuration(65000), '01:05');
     expect(formatMediaDuration(0), '—');
-  });
-
-  test('URL 校验与平台直链识别', () async {
-    final DirectYtDlpService service = DirectYtDlpService();
-    expect(DirectYtDlpService.validateMediaUrl('not-a-url'), isNull);
-    expect(DirectYtDlpService.validateMediaUrl('ftp://a/b.mp3'), isNull);
-    expect(
-      DirectYtDlpService.validateMediaUrl('https://example.com/a.m4a'),
-      isNotNull,
-    );
-
-    final ParsedMediaInfo info = await service.parse(
-      'https://example.com/a.m4a',
-      type: PrivateMediaType.audio,
-    );
-    expect(info.title, 'a');
-    expect(info.extension, 'm4a');
-    expect(info.platform, '本地');
-
-    await expectLater(
-      service.parse(
-        'https://www.bilibili.com/video/BV123',
-        type: PrivateMediaType.audio,
-      ),
-      throwsA(isA<Exception>()),
-    );
   });
 
   test('私人库 Provider：导入后立即可用，按类型分组', () async {

@@ -136,9 +136,10 @@ void main() {
     expect(find.text('添加到私人库'), findsOneWidget);
     expect(find.text('仅音频'), findsOneWidget);
     expect(find.text('视频'), findsOneWidget);
-    await tester.tap(find.text('解析并下载'));
+    expect(find.text('选择本地音频'), findsOneWidget);
+    await tester.tap(find.text('导入私人库'));
     await tester.pumpAndSettle();
-    expect(find.text('请输入有效的 http(s) 链接'), findsOneWidget);
+    expect(find.text('请先选择本地音频或视频'), findsOneWidget);
     await tester.tap(find.byTooltip('关闭'));
     await tester.pumpAndSettle();
 

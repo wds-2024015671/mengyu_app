@@ -74,7 +74,7 @@ lib/
 ## F01–F13 验收状态
 
 - `flutter analyze`：0 issue
-- `flutter test`：121 个测试全部通过
+- `flutter test`：120 个测试全部通过
 - 360×800：`test/routes_smoke_test.dart` 逐条打开 14 条路由，无 RenderFlex 溢出
 - 360×800：`test/components_test.dart` 组合渲染 8 个公共组件，无 RenderFlex 溢出
 - 360×800：`test/home_test.dart` 首页推荐卡 → 播放器、月迹切 tab、下拉刷新、未登录重定向
@@ -242,7 +242,7 @@ lib/
 - 7 个 Repository 接口（Auth/Sound/Upload/Diary/Session/Favorite/Settings）都保留；
   页面没有直接 import `sqflite` / `dio` / `shared_preferences` / `path_provider`。
   `UploadPage` 只 import `audio_file_picker` 这个可注入的服务，属于 F07 的刻意设计。
-- 全量 `flutter analyze` 0 issue；121 个测试通过；360×800 路由/组件/播放器/呼吸/日记/月迹/我的均有覆盖。
+- 全量 `flutter analyze` 0 issue；120 个测试通过；360×800 路由/组件/播放器/呼吸/日记/月迹/我的均有覆盖。
 - 数据页均有 loading / error / empty：声屿三分区、日记、月迹；播放器有 loading/error/retry。
 - Controller/Timer/AudioPlayer/StreamSubscription 均有 dispose 路径；await 后检查 mounted。
 - lib 下无超过 250 行的文件；除 `core/theme` 外没有 `Color(0x...)` 或 `fontSize:` 新字面量。
