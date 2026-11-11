@@ -1,5 +1,6 @@
 import 'package:mengyu_app/core/theme/app_tokens.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../../../providers/player_provider.dart';
 import 'player_progress_ring.dart';
@@ -16,7 +17,6 @@ class PlayerControls extends StatelessWidget {
     required this.canNext,
     required this.onPrevious,
     required this.onNext,
-    required this.progress,
   });
 
   final PlayerProvider player;
@@ -27,7 +27,6 @@ class PlayerControls extends StatelessWidget {
   final bool canNext;
   final VoidCallback onPrevious;
   final VoidCallback onNext;
-  final double progress;
 
   @override
   Widget build(BuildContext context) {
@@ -52,7 +51,7 @@ class PlayerControls extends StatelessWidget {
         SizedBox(
           width: PlayerProgressRing.size,
           height: PlayerProgressRing.size,
-          child: _PlayButton(player: player, progress: progress),
+          child: _PlayButton(player: player),
         ),
         _IconControl(
           tooltip: '下一首',
@@ -105,48 +104,59 @@ class _IconControl extends StatelessWidget {
 }
 
 class _PlayButton extends StatelessWidget {
-  const _PlayButton({required this.player, required this.progress});
+  const _PlayButton({required this.player});
 
   final PlayerProvider player;
-  final double progress;
 
   @override
   Widget build(BuildContext context) {
     final bool loading = player.status == PlayerStatus.loading;
     return Center(
-      child: PlayerProgressRing(
-        progress: progress,
-        child: Tooltip(
-          message: player.isPlaying ? '暂停' : '播放',
-          child: Material(
-            color: context.c.primary,
-            shape: const CircleBorder(),
-            child: InkWell(
-              customBorder: const CircleBorder(),
-              onTap: loading ? null : () => player.togglePlay(),
-              child: SizedBox(
-                width: 64,
-                height: 64,
-                child: Center(
-                  child: loading
-                      ? SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: context.c.onGold,
-                          ),
-                        )
-                      : Icon(
-                          player.isPlaying ? Icons.pause : Icons.play_arrow,
-                          size: 20,
-                          color: context.c.onGold,
-                        ),
+      child: Selector<PlayerProvider, double>(
+        selector: (_, PlayerProvider provider) {
+          final Duration duration = provider.duration > Duration.zero
+              ? provider.duration
+              : Duration(seconds: provider.current?.durationSec ?? 0);
+          return mediaProgress(provider.position, duration);
+        },
+        builder: (BuildContext context, double progress, Widget? _) {
+          return PlayerProgressRing(
+            progress: progress,
+            child: Tooltip(
+              message: player.isPlaying ? '暂停' : '播放',
+              child: Material(
+                color: context.c.primary,
+                shape: const CircleBorder(),
+                child: InkWell(
+                  customBorder: const CircleBorder(),
+                  onTap: loading ? null : () => player.togglePlay(),
+                  child: SizedBox(
+                    width: 64,
+                    height: 64,
+                    child: Center(
+                      child: loading
+                          ? SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: context.c.onGold,
+                              ),
+                            )
+                          : Icon(
+                              player.isPlaying
+                                  ? Icons.pause
+                                  : Icons.play_arrow,
+                              size: 20,
+                              color: context.c.onGold,
+                            ),
+                    ),
+                  ),
                 ),
               ),
             ),
-          ),
-        ),
+          );
+        },
       ),
     );
   }

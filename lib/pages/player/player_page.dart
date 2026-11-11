@@ -10,11 +10,10 @@ import '../../providers/favorite_provider.dart';
 import '../../providers/player_provider.dart';
 import '../../providers/settings_provider.dart';
 import '../../providers/sound_provider.dart';
-import '../../utils/formatters.dart';
 import 'widgets/player_controls.dart';
 import 'widgets/player_exit_dialog.dart';
 import 'widgets/player_now_playing.dart';
-import 'widgets/player_progress_ring.dart';
+import 'widgets/player_time_footer.dart';
 import 'widgets/player_top_bar.dart';
 /// v7 沉浸播放页：唯一允许三段渐变与金色主播放键的页面。
 class PlayerPage extends StatefulWidget {
@@ -123,35 +122,14 @@ class _PlayerPageState extends State<PlayerPage> {
     setState(() => _audio = next);
     unawaited(_player.play(next));
   }
-  String _timerLabel(PlayerProvider player) {
-    final Duration? remaining = player.remaining;
-    if (remaining == null) {
-      return '未设定时';
-    }
-    return '定时 ${formatSeconds(remaining.inSeconds)} · 到点自动停';
-  }
   @override
   Widget build(BuildContext context) {
-    final PlayerProvider player = context.watch<PlayerProvider>();
     final FavoriteProvider favorites = context.watch<FavoriteProvider>();
     final List<AudioItem> local = context.watch<SoundProvider>().localAudios;
     final int index = local.indexWhere((AudioItem item) => item.id == _audio.id);
     final bool canPrevious = index > 0;
     final bool canNext = index >= 0 && index < local.length - 1;
     final bool favorite = favorites.isFavorite(_audio.id);
-    final Duration duration = player.duration > Duration.zero
-        ? player.duration
-        : Duration(seconds: _audio.durationSec);
-    final int maxMs = duration.inMilliseconds;
-    final int posMs = player.position.inMilliseconds.clamp(
-      0,
-      maxMs > 0 ? maxMs : 0,
-    );
-    final Duration position = Duration(milliseconds: posMs);
-    final Duration remaining = Duration(
-      milliseconds: maxMs > 0 ? maxMs - posMs : 0,
-    );
-    final double progress = mediaProgress(position, duration);
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle(
@@ -188,43 +166,38 @@ class _PlayerPageState extends State<PlayerPage> {
                     onMore: _openTimer,
                   ),
                   Expanded(
-                    child: PlayerNowPlaying(
-                      audio: _audio,
-                      player: player,
+                    child: Selector<PlayerProvider, bool>(
+                      selector: (_, PlayerProvider provider) =>
+                          provider.status == PlayerStatus.error,
+                      builder: (BuildContext context, bool _, Widget? __) {
+                        return PlayerNowPlaying(
+                          audio: _audio,
+                          player: _player,
+                        );
+                      },
                     ),
                   ),
-                  PlayerControls(
-                    player: player,
-                    isFavorite: favorite,
-                    onToggleFavorite: () => favorites.toggle(_audio.id),
-                    onOpenTimer: _openTimer,
-                    canPrevious: canPrevious,
-                    canNext: canNext,
-                    onPrevious: () => _step(-1),
-                    onNext: () => _step(1),
-                    progress: progress,
+                  Selector<PlayerProvider, PlayerStatus>(
+                    selector: (_, PlayerProvider provider) => provider.status,
+                    builder: (
+                      BuildContext context,
+                      PlayerStatus status,
+                      Widget? _,
+                    ) {
+                      return PlayerControls(
+                        player: _player,
+                        isFavorite: favorite,
+                        onToggleFavorite: () => favorites.toggle(_audio.id),
+                        onOpenTimer: _openTimer,
+                        canPrevious: canPrevious,
+                        canNext: canNext,
+                        onPrevious: () => _step(-1),
+                        onNext: () => _step(1),
+                      );
+                    },
                   ),
                   const SizedBox(height: AppSpacing.sm),
-                  Text(
-                    '${formatSeconds(position.inSeconds)} · '
-                    '剩余 ${formatSeconds(remaining.inSeconds)}',
-                    textAlign: TextAlign.center,
-                    style: context.s.captionMuted.copyWith(
-                      fontFeatures: const <FontFeature>[
-                        FontFeature.tabularFigures(),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.sm),
-                  Text(
-                    _timerLabel(player),
-                    textAlign: TextAlign.center,
-                    style: context.s.captionMuted.copyWith(
-                      fontFeatures: const <FontFeature>[
-                        FontFeature.tabularFigures(),
-                      ],
-                    ),
-                  ),
+                  PlayerTimeFooter(player: _player, audio: _audio),
                 ],
               ),
             ),
