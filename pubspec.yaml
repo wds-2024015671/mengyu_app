@@ -1,0 +1,49 @@
+name: mengyu_app
+description: "梦屿 · 睡眠与声音疗愈 App（本地优先）"
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.4.3 <4.0.0'
+
+# 依赖白名单：除 D 阶段头像、E 阶段本地通知所需的依赖外，
+# 其余版本保持既有约束，不做无关升级。
+# 本阶段全部数据来自本地，网络层只在 core/network/api_config.dart 留常量。
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  provider: ^6.1.2
+  sqflite: ^2.3.3+1
+  shared_preferences: ^2.2.3
+  audioplayers: ^5.2.1
+  fl_chart: ^0.68.0
+  path: ^1.9.0
+  dio: ^5.4.3
+  file_picker: ^8.0.6
+  path_provider: ^2.1.4
+  image_picker: ^1.1.2
+  image: ^4.2.0
+  app_settings: ^6.1.1
+  flutter_local_notifications: ^17.2.4
+  timezone: ^0.9.4
+  flutter_timezone: ^3.0.1
+  cupertino_icons: ^1.0.6
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true
+
+  # 本地 6 段音景（rain/ocean/stream/wind/fire/noise）在 F03 落地，
+  # 这里先声明目录，保证后续直接放文件即可打包，不用再改 pubspec。
+  assets:
+    - assets/audio/
+    - assets/images/
+
+  # 不打包中文字体：沿用系统字体，避免包体膨胀与字形缺失。

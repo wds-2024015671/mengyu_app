@@ -1,0 +1,28 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "梦屿 · Android 模拟器",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "deviceId": "emulator-5554",
+      "flutterMode": "debug",
+      "env": {
+        "PUB_HOSTED_URL": "https://pub.flutter-io.cn",
+        "FLUTTER_STORAGE_BASE_URL": "https://storage.flutter-io.cn"
+      }
+    },
+    {
+      "name": "梦屿 · 选择设备",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "flutterMode": "debug",
+      "env": {
+        "PUB_HOSTED_URL": "https://pub.flutter-io.cn",
+        "FLUTTER_STORAGE_BASE_URL": "https://storage.flutter-io.cn"
+      }
+    }
+  ]
+}

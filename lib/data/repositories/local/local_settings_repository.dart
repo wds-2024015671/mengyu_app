@@ -1,0 +1,84 @@
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../../core/constants/app_settings.dart';
+import '../../../core/constants/sleep_settings.dart';
+import '../settings_repository.dart';
+
+/// 本地设置：主题与默认定时写 shared_preferences。
+class LocalSettingsRepository implements SettingsRepository {
+  const LocalSettingsRepository();
+
+  static const String themeKey = 'settings.theme_mode';
+  static const String defaultTimerKey = 'settings.default_timer_minutes';
+
+  @override
+  Future<bool> readAutoSleepTracking() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(kAutoSleepTrackingKey) ?? true;
+  }
+
+  @override
+  Future<bool> readMorningReminder() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(kMorningReminderKey) ?? true;
+  }
+
+  @override
+  Future<int> readReminderMinutes() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final int value =
+        prefs.getInt(kReminderMinutesKey) ?? kDefaultReminderMinutes;
+    return kReminderOptions.contains(value)
+        ? value
+        : kDefaultReminderMinutes;
+  }
+
+  @override
+  Future<void> writeAutoSleepTracking(bool enabled) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(kAutoSleepTrackingKey, enabled);
+  }
+
+  @override
+  Future<void> writeMorningReminder(bool enabled) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(kMorningReminderKey, enabled);
+  }
+
+  @override
+  Future<void> writeReminderMinutes(int minutes) async {
+    if (!kReminderOptions.contains(minutes)) {
+      return;
+    }
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(kReminderMinutesKey, minutes);
+  }
+
+  @override
+  Future<AppThemeMode> readThemeMode() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    return AppThemeMode.fromName(prefs.getString(themeKey));
+  }
+
+  @override
+  Future<int> readDefaultTimerMinutes() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final int value = prefs.getInt(defaultTimerKey) ?? kDefaultTimerMinutes;
+    return kTimerOptions.contains(value) ? value : kDefaultTimerMinutes;
+  }
+
+  @override
+  Future<void> writeThemeMode(AppThemeMode mode) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString(themeKey, mode.name);
+  }
+
+  @override
+  Future<void> writeDefaultTimerMinutes(int minutes) async {
+    if (!kTimerOptions.contains(minutes)) {
+      return;
+    }
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(defaultTimerKey, minutes);
+  }
+}

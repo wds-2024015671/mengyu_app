@@ -1,0 +1,200 @@
+import 'package:flutter_test/flutter_test.dart';
+import 'package:mengyu_app/data/services/sleep_tracking_service.dart';
+import 'package:mengyu_app/models/audio_item.dart';
+import 'package:mengyu_app/models/sleep_tracking_record.dart';
+import 'package:mengyu_app/providers/player_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import 'support/fake_audio_engine.dart';
+import 'support/fake_session_repository.dart';
+import 'support/fake_sleep_tracking.dart';
+
+void main() {
+  late FakeAudioEngine engine;
+  late FakeSessionRepository sessions;
+  late PlayerProvider provider;
+  late DateTime now;
+
+  setUp(() {
+    engine = FakeAudioEngine();
+    sessions = FakeSessionRepository();
+    now = DateTime(2026, 11, 9, 23);
+    provider = PlayerProvider(
+      engineFactory: () => engine,
+      sessionRepository: sessions,
+      clock: () => now,
+      timerTick: const Duration(milliseconds: 10),
+    );
+  });
+
+  tearDown(() {
+    provider.dispose();
+  });
+
+  test('play 按 sourceType 选 AssetSource / DeviceFileSource', () async {
+    await provider.play(rainAsset());
+    expect(engine.playedAssets, <String>['audio/rain_loop.wav']);
+    expect(provider.status, PlayerStatus.playing);
+    expect(provider.isPlaying, isTrue);
+    expect(engine.lastVolume, 0.6);
+
+    await provider.play(
+      const AudioItem(
+        id: 'upload_1',
+        title: '我的雨声',
+        category: '雨声',
+        sourceType: AudioSourceType.file,
+        filePath: '/tmp/upload_1.wav',
+      ),
+    );
+    expect(engine.playedFiles, <String>['/tmp/upload_1.wav']);
+    expect(provider.status, PlayerStatus.playing);
+  });
+
+  test('remote 音源不发请求，直接进入错误态', () async {    await provider.play(
+      const AudioItem(
+        id: 'public_1',
+        title: '公共雨声',
+        category: '雨声',
+        sourceType: AudioSourceType.remote,
+        fileUrl: 'https://example.com/rain.wav',
+      ),
+    );
+    expect(provider.status, PlayerStatus.error);
+    expect(provider.error, contains('暂时无法播放'));
+    expect(engine.playedAssets, isEmpty);
+  });
+
+  test('暂停满 1 分钟落库，多次暂停用同一条记录 upsert', () async {
+    await provider.play(rainAsset());
+    now = now.add(const Duration(minutes: 2));
+    await provider.pause();
+
+    expect(provider.status, PlayerStatus.paused);
+    expect(engine.paused, isTrue);
+    expect(sessions.saved.length, 1);
+    expect(sessions.saved.single.id, 1);
+    expect(sessions.saved.single.durationMin, 2);
+    expect(sessions.saved.single.note, contains('雨声'));
+
+    await provider.resume();
+    expect(provider.status, PlayerStatus.playing);
+    expect(engine.resumed, isTrue);
+
+    now = now.add(const Duration(minutes: 3));
+    await provider.pause();
+    expect(sessions.saved.length, 1);
+    expect(sessions.saved.single.id, 1);
+    expect(sessions.saved.single.durationMin, 5);
+  });
+
+  test('定时结束：暂停、清空倒计时、提示并记录', () async {
+    await provider.play(rainAsset());
+    now = now.add(const Duration(minutes: 30));
+    provider.startTimer(duration: const Duration(milliseconds: 40));
+    expect(provider.hasTimer, isTrue);
+
+    await Future<void>.delayed(const Duration(milliseconds: 200));
+
+    expect(provider.hasTimer, isFalse);
+    expect(provider.status, PlayerStatus.paused);
+    expect(engine.paused, isTrue);
+    expect(provider.takeNotice(), '定时结束，已停止播放');
+    expect(sessions.saved.single.durationMin, 30);
+  });
+
+  test('加载失败进入 error，重试后恢复播放', () async {
+    engine.failPlay = true;
+    await provider.play(rainAsset());
+    expect(provider.status, PlayerStatus.error);
+    expect(provider.error, contains('模拟音频加载失败'));
+
+    engine.failPlay = false;
+    await provider.retry();
+    expect(provider.status, PlayerStatus.playing);
+    expect(engine.playedAssets, <String>['audio/rain_loop.wav']);
+  });
+
+  test('音量、进度与 seek', () async {
+    await provider.play(rainAsset());
+    await provider.setVolume(0.3);
+    expect(provider.volume, 0.3);
+    expect(engine.lastVolume, 0.3);
+
+    engine.emitDuration(const Duration(seconds: 120));
+    await Future<void>.delayed(Duration.zero);
+    expect(provider.duration, const Duration(seconds: 120));
+
+    await provider.seek(const Duration(seconds: 30));
+    expect(provider.position, const Duration(seconds: 30));
+    expect(engine.lastSeek, const Duration(seconds: 30));
+  });
+
+  test('同一首重复 play 不重新加载', () async {
+    await provider.play(rainAsset());
+    await provider.play(rainAsset());
+    expect(engine.playedAssets.length, 1);
+  });
+
+  test('退出播放页后重新进入同一首，恢复播放会新起一条记录', () async {
+    await provider.play(rainAsset());
+    now = now.add(const Duration(minutes: 2));
+    await provider.onPageLeave();
+    expect(sessions.saved.length, 1);
+
+    // 重新进入：Playback 仍是同一首且已暂停 → play 走 resume
+    await provider.play(rainAsset());
+    expect(provider.status, PlayerStatus.playing);
+
+    now = now.add(const Duration(minutes: 2));
+    await provider.pause();
+    expect(sessions.saved.length, 2);
+    expect(sessions.saved.last.durationMin, 2);
+  });
+
+  test('退出播放页：取消定时、暂停并落记录', () async {
+    await provider.play(rainAsset());
+    now = now.add(const Duration(minutes: 2));
+    provider.startTimer(duration: const Duration(minutes: 5));
+
+    await provider.onPageLeave();
+
+    expect(provider.hasTimer, isFalse);
+    expect(provider.status, PlayerStatus.paused);
+    expect(engine.paused, isTrue);
+    expect(sessions.saved.length, 1);
+    expect(sessions.saved.single.durationMin, 2);
+  });
+
+  test('定时结束 → 自动开始睡眠记录', () async {
+    SharedPreferences.setMockInitialValues(<String, Object>{});
+    final FakeSleepTrackingRepository tracking =
+        FakeSleepTrackingRepository();
+    final FakeSleepNotificationService notifications =
+        FakeSleepNotificationService();
+    final DateTime now = DateTime(2026, 11, 10, 23);
+    final PlayerProvider timed = PlayerProvider(
+      engineFactory: () => engine,
+      sessionRepository: sessions,
+      trackingService: SleepTrackingService(
+        tracking: tracking,
+        sessions: sessions,
+        notifications: notifications,
+        clock: () => now,
+      ),
+      clock: () => now,
+      timerTick: const Duration(milliseconds: 10),
+    );
+    addTearDown(timed.dispose);
+
+    await timed.play(rainAsset());
+    timed.startTimer(duration: const Duration(milliseconds: 30));
+    await Future<void>.delayed(const Duration(milliseconds: 120));
+
+    expect(tracking.records.values.single.status, SleepTrackingStatus.recording);
+    expect(tracking.records.values.single.startAt, now);
+    expect(notifications.scheduled, isTrue);
+    expect(timed.hasTimer, isFalse);
+    expect(timed.takeNotice(), '定时结束，已停止播放 · 已开始记录睡眠');
+  });
+}
