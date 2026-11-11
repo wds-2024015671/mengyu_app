@@ -60,6 +60,22 @@ void main() {
     expect(provider.defaultTimerMinutes, 45);
   });
 
+  test('旧默认 30 分钟迁移到 10，历史自定义 45 保留', () async {
+    const LocalSettingsRepository repository = LocalSettingsRepository();
+
+    SharedPreferences.setMockInitialValues(<String, Object>{
+      LocalSettingsRepository.defaultTimerKey: 30,
+    });
+    expect(await repository.readDefaultTimerMinutes(), 10);
+    final SharedPreferences migrated = await SharedPreferences.getInstance();
+    expect(migrated.getInt(LocalSettingsRepository.defaultTimerKey), 10);
+
+    SharedPreferences.setMockInitialValues(<String, Object>{
+      LocalSettingsRepository.defaultTimerKey: 45,
+    });
+    expect(await repository.readDefaultTimerMinutes(), 45);
+  });
+
   test('清除数据调用 cleaner，并把主题/定时恢复默认', () async {
     final FakeSettingsRepository repository = FakeSettingsRepository(
       themeMode: AppThemeMode.light,

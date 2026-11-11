@@ -10,6 +10,7 @@ class LocalSettingsRepository implements SettingsRepository {
 
   static const String themeKey = 'settings.theme_mode';
   static const String defaultTimerKey = 'settings.default_timer_minutes';
+  static const String timerMigrationKey = 'settings.timer_migration_v2';
 
   @override
   Future<bool> readAutoSleepTracking() async {
@@ -61,8 +62,17 @@ class LocalSettingsRepository implements SettingsRepository {
   @override
   Future<int> readDefaultTimerMinutes() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    final int value = prefs.getInt(defaultTimerKey) ?? kDefaultTimerMinutes;
-    return isValidTimerMinutes(value) ? value : kDefaultTimerMinutes;
+    final int raw = prefs.getInt(defaultTimerKey) ?? kDefaultTimerMinutes;
+    // 旧版本的默认 30 分钟一次性迁移到新的 10 分钟；用户自定义的 45/60 保留。
+    if (!(prefs.getBool(timerMigrationKey) ?? false)) {
+      final int migrated = raw == 30 ? kDefaultTimerMinutes : raw;
+      await prefs.setBool(timerMigrationKey, true);
+      if (migrated != raw) {
+        await prefs.setInt(defaultTimerKey, migrated);
+      }
+      return isValidTimerMinutes(migrated) ? migrated : kDefaultTimerMinutes;
+    }
+    return isValidTimerMinutes(raw) ? raw : kDefaultTimerMinutes;
   }
 
   @override
