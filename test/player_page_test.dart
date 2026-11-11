@@ -5,6 +5,7 @@ import 'package:mengyu_app/core/theme/app_theme.dart';
 import 'package:mengyu_app/data/repositories/local/local_favorite_repository.dart';
 import 'package:mengyu_app/data/repositories/local/local_sound_repository.dart';
 import 'package:mengyu_app/pages/player/player_page.dart';
+import 'package:mengyu_app/pages/player/widgets/player_progress_ring.dart';
 import 'package:mengyu_app/pages/timer/timer_page.dart';
 import 'package:mengyu_app/providers/favorite_provider.dart';
 import 'package:mengyu_app/providers/player_provider.dart';
@@ -28,8 +29,9 @@ Future<PlayerHarness> _pumpPlayer(
   WidgetTester tester, {
   bool failPlay = false,
   int defaultTimerMinutes = 30,
+  Size size = const Size(360, 800),
 }) async {
-  tester.view.physicalSize = const Size(360, 800);
+  tester.view.physicalSize = size;
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.resetPhysicalSize);
   addTearDown(tester.view.resetDevicePixelRatio);
@@ -88,6 +90,26 @@ void main() {
     SharedPreferences.setMockInitialValues(<String, Object>{});
   });
 
+  test('progress 0..1：未知时长、负数、超出都安全', () {
+    expect(mediaProgress(Duration.zero, Duration.zero), 0);
+    expect(
+      mediaProgress(const Duration(seconds: 1), Duration.zero),
+      0,
+    );
+    expect(
+      mediaProgress(const Duration(seconds: -2), const Duration(seconds: 10)),
+      0,
+    );
+    expect(
+      mediaProgress(const Duration(seconds: 5), const Duration(seconds: 10)),
+      0.5,
+    );
+    expect(
+      mediaProgress(const Duration(seconds: 15), const Duration(seconds: 10)),
+      1,
+    );
+  });
+
   testWidgets('播放页：自动播放 / 暂停 / 收藏 / 定时', (WidgetTester tester) async {
     final PlayerHarness harness = await _pumpPlayer(tester);
 
@@ -95,8 +117,18 @@ void main() {
     expect(find.text('雨声'), findsOneWidget);
     expect(find.textContaining('深度助眠'), findsOneWidget);
     expect(find.byType(Hero), findsOneWidget);
+    expect(find.byType(PlayerProgressRing), findsOneWidget);
+    expect(find.text('00:00 · 剩余 00:00'), findsOneWidget);
+    expect(find.byType(Slider), findsNothing);
+    expect(find.byType(LinearProgressIndicator), findsNothing);
     expect(harness.engine.playedAssets, <String>['audio/rain_loop.wav']);
     expect(harness.player.status, PlayerStatus.playing);
+
+    harness.engine.emitDuration(const Duration(seconds: 20));
+    harness.engine.emitPosition(const Duration(seconds: 5));
+    await tester.pump();
+    await tester.pumpAndSettle();
+    expect(find.text('00:05 · 剩余 00:15'), findsOneWidget);
 
     await tester.tap(find.byTooltip('暂停'));
     await tester.pumpAndSettle();
@@ -120,6 +152,15 @@ void main() {
 
     expect(harness.player.remaining?.inMinutes, 10);
     expect(find.text('定时 10:00 · 到点自动停'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('播放器 393×852：居中布局无 overflow', (
+    WidgetTester tester,
+  ) async {
+    await _pumpPlayer(tester, size: const Size(393, 852));
+    expect(find.byType(PlayerProgressRing), findsOneWidget);
+    expect(find.textContaining('剩余'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 

@@ -12,9 +12,9 @@ import '../../providers/settings_provider.dart';
 import '../../providers/sound_provider.dart';
 import '../../utils/formatters.dart';
 import 'widgets/player_controls.dart';
-import 'widgets/player_cover.dart';
-import 'widgets/player_error_panel.dart';
-import 'widgets/player_progress.dart';
+import 'widgets/player_exit_dialog.dart';
+import 'widgets/player_now_playing.dart';
+import 'widgets/player_progress_ring.dart';
 import 'widgets/player_top_bar.dart';
 /// v7 沉浸播放页：唯一允许三段渐变与金色主播放键的页面。
 class PlayerPage extends StatefulWidget {
@@ -83,22 +83,7 @@ class _PlayerPageState extends State<PlayerPage> {
   }
   Future<void> _handleBack() async {
     if (_player.isPlaying) {
-      final bool? start = await showDialog<bool>(
-        context: context,
-        builder: (BuildContext dialogContext) {
-          return AlertDialog(
-            title: const Text('要开始记录睡眠吗？'),
-            content: Text(
-              '声音已停止。梦屿可以从现在开始计时，明早提醒你确认。',
-              style: context.s.bodySecondary,
-            ),
-            actions: <Widget>[
-              TextButton(onPressed: () => Navigator.pop(dialogContext, false), child: const Text('不用了')),
-              TextButton(onPressed: () => Navigator.pop(dialogContext, true), child: const Text('开始记录')),
-            ],
-          );
-        },
-      );
+      final bool? start = await showSleepRecordingPrompt(context);
       if (!mounted) return;
       if (start == true) {
         final bool started = await _player.startSleepRecording();
@@ -157,6 +142,16 @@ class _PlayerPageState extends State<PlayerPage> {
     final Duration duration = player.duration > Duration.zero
         ? player.duration
         : Duration(seconds: _audio.durationSec);
+    final int maxMs = duration.inMilliseconds;
+    final int posMs = player.position.inMilliseconds.clamp(
+      0,
+      maxMs > 0 ? maxMs : 0,
+    );
+    final Duration position = Duration(milliseconds: posMs);
+    final Duration remaining = Duration(
+      milliseconds: maxMs > 0 ? maxMs - posMs : 0,
+    );
+    final double progress = mediaProgress(position, duration);
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle(
@@ -192,36 +187,12 @@ class _PlayerPageState extends State<PlayerPage> {
                     onBack: _handleBack,
                     onMore: _openTimer,
                   ),
-                  const SizedBox(height: AppSpacing.sm),
-                  SizedBox(
-                    height: 250,
-                    child: Center(child: PlayerCover(item: _audio)),
-                  ),
-                  const SizedBox(height: AppSpacing.sm),
-                  Text(
-                    _audio.title,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    textAlign: TextAlign.center,
-                    style: context.s.title,
-                  ),
-                  const SizedBox(height: AppSpacing.xs),
-                  Text(
-                    '${_audio.category} · 深度助眠',
-                    textAlign: TextAlign.center,
-                    style: context.s.caption,
-                  ),
-                  const SizedBox(height: AppSpacing.xxl),
-                  if (player.status == PlayerStatus.error)
-                    PlayerErrorPanel(player: player)
-                  else
-                    PlayerProgress(
-                      position: player.position,
-                      duration: duration,
-                      enabled: !player.isLoading,
-                      onSeek: player.seek,
+                  Expanded(
+                    child: PlayerNowPlaying(
+                      audio: _audio,
+                      player: player,
                     ),
-                  const Spacer(),
+                  ),
                   PlayerControls(
                     player: player,
                     isFavorite: favorite,
@@ -231,12 +202,28 @@ class _PlayerPageState extends State<PlayerPage> {
                     canNext: canNext,
                     onPrevious: () => _step(-1),
                     onNext: () => _step(1),
+                    progress: progress,
                   ),
-                  const SizedBox(height: AppSpacing.md),
+                  const SizedBox(height: AppSpacing.sm),
+                  Text(
+                    '${formatSeconds(position.inSeconds)} · '
+                    '剩余 ${formatSeconds(remaining.inSeconds)}',
+                    textAlign: TextAlign.center,
+                    style: context.s.captionMuted.copyWith(
+                      fontFeatures: const <FontFeature>[
+                        FontFeature.tabularFigures(),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
                   Text(
                     _timerLabel(player),
                     textAlign: TextAlign.center,
-                    style: context.s.captionMuted,
+                    style: context.s.captionMuted.copyWith(
+                      fontFeatures: const <FontFeature>[
+                        FontFeature.tabularFigures(),
+                      ],
+                    ),
                   ),
                 ],
               ),

@@ -2,6 +2,7 @@ import 'package:mengyu_app/core/theme/app_tokens.dart';
 import 'package:flutter/material.dart';
 
 import '../../../providers/player_provider.dart';
+import 'player_progress_ring.dart';
 
 /// v7 播放控制：收藏 / 上一首 / 金色播放 / 下一首 / 定时列表。
 class PlayerControls extends StatelessWidget {
@@ -15,6 +16,7 @@ class PlayerControls extends StatelessWidget {
     required this.canNext,
     required this.onPrevious,
     required this.onNext,
+    required this.progress,
   });
 
   final PlayerProvider player;
@@ -25,48 +27,46 @@ class PlayerControls extends StatelessWidget {
   final bool canNext;
   final VoidCallback onPrevious;
   final VoidCallback onNext;
+  final double progress;
 
   @override
   Widget build(BuildContext context) {
     final bool loading = player.status == PlayerStatus.loading;
     return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: <Widget>[
-        Expanded(
-          child: _IconControl(
-            tooltip: isFavorite ? '取消收藏' : '收藏',
-            icon: isFavorite ? Icons.favorite : Icons.favorite_border,
-            color: isFavorite ? context.c.secondary : context.c.textSecondary,
-            onPressed: onToggleFavorite,
-          ),
+        _IconControl(
+          tooltip: isFavorite ? '取消收藏' : '收藏',
+          icon: isFavorite ? Icons.favorite : Icons.favorite_border,
+          color: isFavorite ? context.c.secondary : context.c.textSecondary,
+          onPressed: onToggleFavorite,
         ),
-        Expanded(
-          child: _IconControl(
-            tooltip: '上一首',
-            icon: Icons.skip_previous,
-            color: canPrevious && !loading
-                ? context.c.textSecondary
-                : context.c.textTertiary,
-            onPressed: canPrevious && !loading ? onPrevious : null,
-          ),
+        _IconControl(
+          tooltip: '上一首',
+          icon: Icons.skip_previous,
+          color: canPrevious && !loading
+              ? context.c.textSecondary
+              : context.c.textTertiary,
+          onPressed: canPrevious && !loading ? onPrevious : null,
         ),
-        Expanded(child: _PlayButton(player: player)),
-        Expanded(
-          child: _IconControl(
-            tooltip: '下一首',
-            icon: Icons.skip_next,
-            color: canNext && !loading
-                ? context.c.textSecondary
-                : context.c.textTertiary,
-            onPressed: canNext && !loading ? onNext : null,
-          ),
+        SizedBox(
+          width: PlayerProgressRing.size,
+          height: PlayerProgressRing.size,
+          child: _PlayButton(player: player, progress: progress),
         ),
-        Expanded(
-          child: _IconControl(
-            tooltip: '定时',
-            icon: Icons.format_list_bulleted,
-            color: context.c.textSecondary,
-            onPressed: onOpenTimer,
-          ),
+        _IconControl(
+          tooltip: '下一首',
+          icon: Icons.skip_next,
+          color: canNext && !loading
+              ? context.c.textSecondary
+              : context.c.textTertiary,
+          onPressed: canNext && !loading ? onNext : null,
+        ),
+        _IconControl(
+          tooltip: '定时',
+          icon: Icons.format_list_bulleted,
+          color: context.c.textSecondary,
+          onPressed: onOpenTimer,
         ),
       ],
     );
@@ -105,40 +105,44 @@ class _IconControl extends StatelessWidget {
 }
 
 class _PlayButton extends StatelessWidget {
-  const _PlayButton({required this.player});
+  const _PlayButton({required this.player, required this.progress});
 
   final PlayerProvider player;
+  final double progress;
 
   @override
   Widget build(BuildContext context) {
     final bool loading = player.status == PlayerStatus.loading;
     return Center(
-      child: Tooltip(
-        message: player.isPlaying ? '暂停' : '播放',
-        child: Material(
-          color: context.c.primary,
-          shape: const CircleBorder(),
-          child: InkWell(
-            customBorder: const CircleBorder(),
-            onTap: loading ? null : () => player.togglePlay(),
-            child: SizedBox(
-              width: 64,
-              height: 64,
-              child: Center(
-                child: loading
-                    ? SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
+      child: PlayerProgressRing(
+        progress: progress,
+        child: Tooltip(
+          message: player.isPlaying ? '暂停' : '播放',
+          child: Material(
+            color: context.c.primary,
+            shape: const CircleBorder(),
+            child: InkWell(
+              customBorder: const CircleBorder(),
+              onTap: loading ? null : () => player.togglePlay(),
+              child: SizedBox(
+                width: 64,
+                height: 64,
+                child: Center(
+                  child: loading
+                      ? SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: context.c.onGold,
+                          ),
+                        )
+                      : Icon(
+                          player.isPlaying ? Icons.pause : Icons.play_arrow,
+                          size: 20,
                           color: context.c.onGold,
                         ),
-                      )
-                    : Icon(
-                        player.isPlaying ? Icons.pause : Icons.play_arrow,
-                        size: 20,
-                        color: context.c.onGold,
-                      ),
+                ),
               ),
             ),
           ),
