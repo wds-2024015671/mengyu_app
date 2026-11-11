@@ -11,8 +11,6 @@ List<SoundListEntry> buildSoundEntries({
   required SoundProvider sound,
   required PrivateMediaProvider private,
   required String query,
-  required int segment,
-  required bool filterApplied,
 }) {
   final List<SoundListEntry> entries = <SoundListEntry>[];
   for (final SoundDemo demo in kSoundDemos) {
@@ -38,15 +36,7 @@ List<SoundListEntry> buildSoundEntries({
       ),
     );
   }
-  final String category = switch (segment) {
-    1 => 'Nature',
-    2 => 'Other',
-    _ => 'ASMR',
-  };
   return entries.where((SoundListEntry entry) {
-    if (filterApplied && segment != 0 && entry.category != category) {
-      return false;
-    }
     if (query.isNotEmpty &&
         !'${entry.title} ${entry.category}'.toLowerCase().contains(query)) {
       return false;
@@ -54,7 +44,6 @@ List<SoundListEntry> buildSoundEntries({
     return true;
   }).toList(growable: false);
 }
-
 List<VideoEntry> buildVideoEntries({
   required PrivateMediaProvider private,
   required String query,

@@ -15,7 +15,6 @@ import 'widgets/sound_catalog.dart';
 import 'widgets/sound_list_entry.dart';
 import 'widgets/sound_list_frame.dart';
 import 'widgets/sound_search_field.dart';
-import 'widgets/sound_segment_switch.dart';
 import 'widgets/video_group.dart';
 import 'widgets/video_preview_sheet.dart';
 /// v9 声屿：私人库入口 + 单滚动声音列表 + 视频大框。
@@ -31,8 +30,6 @@ class _SoundTabState extends State<SoundTab> {
   final GlobalKey _soundKey = GlobalKey();
   final GlobalKey _videoKey = GlobalKey();
   Timer? _debounce;
-  int _segment = 0;
-  bool _filterApplied = false;
   String _query = '';
   @override
   void initState() {
@@ -109,8 +106,6 @@ class _SoundTabState extends State<SoundTab> {
       sound: sound,
       private: private,
       query: _query,
-      segment: _segment,
-      filterApplied: _filterApplied,
     );
     final List<VideoEntry> videos = buildVideoEntries(
       private: private,
@@ -128,30 +123,13 @@ class _SoundTabState extends State<SoundTab> {
             Padding(
               padding: const EdgeInsets.fromLTRB(
                 AppSpacing.page,
-                AppSpacing.lg,
+                AppSpacing.md,
                 AppSpacing.page,
                 0,
               ),
               child: SoundSearchField(
                 controller: _search,
                 onChanged: _onQueryChanged,
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(
-                AppSpacing.page,
-                AppSpacing.md,
-                AppSpacing.page,
-                0,
-              ),
-              child: SoundSegmentSwitch(
-                index: _segment,
-                onChanged: (int value) {
-                  setState(() {
-                    _segment = value;
-                    _filterApplied = true;
-                  });
-                },
               ),
             ),
             KeyedSubtree(
@@ -162,7 +140,7 @@ class _SoundTabState extends State<SoundTab> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: <Widget>[
                     SectionHeader(
-                      title: '全部声音 · ${sounds.length}',
+                      title: '全部声音',
                       actionLabel: '更多',
                       onAction: () => _scrollTo(_soundKey),
                       padding: const EdgeInsets.only(

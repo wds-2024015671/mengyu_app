@@ -3,7 +3,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mengyu_app/app.dart';
 import 'package:mengyu_app/data/repositories/local/local_favorite_repository.dart';
 import 'package:mengyu_app/pages/tabs/widgets/sound_list_frame.dart';
-import 'package:mengyu_app/pages/tabs/widgets/sound_segment_switch.dart';
 import 'package:mengyu_app/pages/tabs/widgets/video_group.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -33,7 +32,7 @@ void main() {
     expect(await repository.load(), <String>{'local_rain', 'local_noise'});
   });
 
-  testWidgets('声屿 v9：声音列表 / 视频大框 / 搜索 / 分类', (
+  testWidgets('声屿 v9：声音列表 / 视频大框 / 搜索', (
     WidgetTester tester,
   ) async {
     _usePhoneSize(tester);
@@ -47,8 +46,9 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('把世界调成静音'), findsOneWidget);
+    expect(find.text('搜索名称.......'), findsOneWidget);
     expect(find.text('私人库'), findsOneWidget);
-    expect(find.text('全部声音 · 6'), findsOneWidget);
+    expect(find.text('全部声音'), findsOneWidget);
     expect(find.byType(SoundListFrame), findsOneWidget);
     expect(find.byType(VideoGroup), findsOneWidget);
     expect(find.text('全部视频'), findsOneWidget);
@@ -61,42 +61,14 @@ void main() {
     await tester.enterText(search, '雨');
     await tester.pump(const Duration(milliseconds: 350));
     await tester.pumpAndSettle();
-    expect(find.text('全部声音 · 1'), findsOneWidget);
+    expect(find.text('全部声音'), findsOneWidget);
     expect(find.text('雨落窗台'), findsOneWidget);
     expect(find.text('篝火噼啪'), findsNothing);
 
     await tester.enterText(search, '');
     await tester.pump(const Duration(milliseconds: 350));
     await tester.pumpAndSettle();
-    expect(find.text('全部声音 · 6'), findsOneWidget);
-
-    await tester.tap(
-      find.descendant(
-        of: find.byType(SoundSegmentSwitch),
-        matching: find.text('Nature'),
-      ),
-    );
-    await tester.pumpAndSettle();
-    expect(find.text('全部声音 · 2'), findsOneWidget);
-    expect(find.text('海浪白噪'), findsOneWidget);
-    expect(
-      find.descendant(
-        of: find.byType(SoundListFrame),
-        matching: find.text('夏夜虫鸣'),
-      ),
-      findsOneWidget,
-    );
-    expect(find.text('雨落窗台'), findsNothing);
-
-    await tester.tap(
-      find.descendant(
-        of: find.byType(SoundSegmentSwitch),
-        matching: find.text('Other'),
-      ),
-    );
-    await tester.pumpAndSettle();
-    expect(find.text('全部声音 · 0'), findsOneWidget);
-    expect(find.text('没有找到相关声音'), findsOneWidget);
+    expect(find.text('全部声音'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
@@ -112,14 +84,14 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.widgetWithText(InkWell, '声屿'));
     await tester.pumpAndSettle();
-    expect(find.text('全部声音 · 6'), findsOneWidget);
+    expect(find.text('全部声音'), findsOneWidget);
     await tester.drag(find.byType(ListView), const Offset(0, -2600));
     await tester.pumpAndSettle();
     expect(find.byType(VideoGroup), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('声屿：私人库弹层 / 无效链接 / 视频点击', (
+  testWidgets('声屿：私人库弹层 / 空选择提示 / 视频点击', (
     WidgetTester tester,
   ) async {
     _usePhoneSize(tester);

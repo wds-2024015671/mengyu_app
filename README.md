@@ -78,7 +78,7 @@ lib/
 - 360×800：`test/routes_smoke_test.dart` 逐条打开 14 条路由，无 RenderFlex 溢出
 - 360×800：`test/components_test.dart` 组合渲染 8 个公共组件，无 RenderFlex 溢出
 - 360×800：`test/home_test.dart` 首页推荐卡 → 播放器、月迹切 tab、下拉刷新、未登录重定向
-- 360×800：`test/sound_test.dart` 声屿声音列表、视频大框、搜索、分类、私人库弹层
+- 360×800：`test/sound_test.dart` 声屿声音列表、视频大框、搜索、私人库弹层
 - 360×800：`test/upload_page_test.dart` 选文件、20MB 拦截、表单校验、成功 pop(true)、失败 SnackBar、未登录跳转
 - 360×800：`test/player_page_test.dart` 自动播放、暂停、收藏、定时、错误重试
 - `/` → `/login` → `/home` 可跳；4 tab 可切；`/upload` 可从「我的 → 我的上传」打开
@@ -89,7 +89,7 @@ lib/
   游客进入；失败 SnackBar；记住我关闭后重启回登录页；已登录冷启动直接进首页
 - F05：MainShell 首帧登录守卫；首页按时段问候、月亮插画 + Stack 星点、连续 0 天显示“从今晚开始”、
   预推送 `SoundProvider` 第一条进播放器、呼吸/日记命名路由 + 月迹切 tab、仪式三步、下拉刷新
-- F06：声屿私人库入口；一个外框 6 行声音；一个大框 2 列视频；搜索/分类/更多；本地演示视频；
+- F06：声屿私人库入口；一个外框 6 行声音；一个大框 2 列视频；搜索/更多；本地视频；
   公共库空态“公共库将在后端接入后开放”且保留搜索/分页/错误结构；
   我的上传待审/上架/驳回+原因；右上角上传；播放器返回刷新收藏
 - F07：file_picker 选音频、20MB 拦截、标题/分类/简介/版权校验、提交 loading、
@@ -133,7 +133,7 @@ lib/
 
 ## 声屿说明（F06）
 
-- 三分区用 `IndexedStack`，切换不会丢掉搜索词、分类筛选与滚动位置；
+- 单页滚动，搜索词保留在 tab 状态；声音与视频共用一个大外框；
   `SoundTab(active:)` 由 MainShell 传入，只有真正切到声屿时才加载上传表/公共库。
 - 收藏独立成 `FavoriteProvider` + `LocalFavoriteRepository`，prefs key 为 `favorites.sound_ids`；
   点爱心立刻更新内存再落盘，播放器返回后 `reload()` 以磁盘为准。

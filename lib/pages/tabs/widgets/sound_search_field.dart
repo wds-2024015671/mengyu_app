@@ -9,7 +9,7 @@ class SoundSearchField extends StatefulWidget {
     super.key,
     required this.controller,
     required this.onChanged,
-    this.hintText = '搜索 ASMR、自然声、白噪…',
+    this.hintText = '搜索名称.......',
   });
 
   final TextEditingController controller;
