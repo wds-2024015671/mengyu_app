@@ -74,7 +74,7 @@ lib/
 ## F01–F13 验收状态
 
 - `flutter analyze`：0 issue
-- `flutter test`：120 个测试全部通过
+- `flutter test`：126 个测试全部通过
 - 360×800：`test/routes_smoke_test.dart` 逐条打开 14 条路由，无 RenderFlex 溢出
 - 360×800：`test/components_test.dart` 组合渲染 8 个公共组件，无 RenderFlex 溢出
 - 360×800：`test/home_test.dart` 首页推荐卡 → 播放器、月迹切 tab、下拉刷新、未登录重定向
@@ -135,6 +135,8 @@ lib/
 
 - 单页滚动，搜索词保留在 tab 状态；声音与视频共用一个大外框；
   `SoundTab(active:)` 由 MainShell 传入，只有真正切到声屿时才加载上传表/公共库。
+- 「更多」进入 `AllMediaPage`：全部声音单外框（当前 6 条，随导入增加）/ 全部视频 2×4 大外框；支持管理、
+  全选、取消选择、gold 删除二次确认；删除私人库记录 + 私有文件，内置演示项用 prefs 标记隐藏。
 - 收藏独立成 `FavoriteProvider` + `LocalFavoriteRepository`，prefs key 为 `favorites.sound_ids`；
   点爱心立刻更新内存再落盘，播放器返回后 `reload()` 以磁盘为准。
 - 公共库 Local 实现严格返回空列表，页面显示“公共库将在后端接入后开放”；
@@ -158,7 +160,7 @@ lib/
   + `PlaySessionTracker`；音频引擎用工厂惰性创建，VM 测试可注入假引擎，生产默认 audioplayers。
 - 播放源：`sourceType=asset` → `AssetSource`，`file` → `DeviceFileSource`，`remote` 直接报
   “公共音频需要后端接入后才能播放”，不发网络请求；release mode 固定 `loop`。
-- 播放页：全屏夜空渐变 + Hero 封面（tag 与声屿 `SoundCard` 共用 `audio_cover_tag`）、
+- 播放页：全屏夜空渐变 + Hero 封面（tag 与声屿声音行共用 `audio_cover_tag`）、
   进度/seek、暂停/继续、音量、收藏、定时；退出页面暂停并取消定时。
 - 定时：5/10/15/20 分钟快捷项 + 自定义 1–180 分钟，到 0 秒时暂停 + 写 `sleep_sessions` + SnackBar；
   Provider dispose / 退出播放页都会取消 Timer。
@@ -242,7 +244,7 @@ lib/
 - 7 个 Repository 接口（Auth/Sound/Upload/Diary/Session/Favorite/Settings）都保留；
   页面没有直接 import `sqflite` / `dio` / `shared_preferences` / `path_provider`。
   `UploadPage` 只 import `audio_file_picker` 这个可注入的服务，属于 F07 的刻意设计。
-- 全量 `flutter analyze` 0 issue；120 个测试通过；360×800 路由/组件/播放器/呼吸/日记/月迹/我的均有覆盖。
+- 全量 `flutter analyze` 0 issue；126 个测试通过；360×800 路由/组件/播放器/呼吸/日记/月迹/我的均有覆盖。
 - 数据页均有 loading / error / empty：声屿三分区、日记、月迹；播放器有 loading/error/retry。
 - Controller/Timer/AudioPlayer/StreamSubscription 均有 dispose 路径；await 后检查 mounted。
 - lib 下无超过 250 行的文件；除 `core/theme` 外没有 `Color(0x...)` 或 `fontSize:` 新字面量。

@@ -51,6 +51,19 @@ void main() {
     expect(provider.status, PlayerStatus.playing);
   });
 
+  test('clear 停止当前播放并取消定时', () async {
+    await provider.play(rainAsset());
+    provider.startTimer(duration: const Duration(minutes: 10));
+    expect(provider.current, isNotNull);
+    expect(provider.hasTimer, isTrue);
+
+    await provider.clear();
+    expect(provider.current, isNull);
+    expect(provider.status, PlayerStatus.idle);
+    expect(provider.hasTimer, isFalse);
+    expect(engine.paused, isTrue);
+  });
+
   test('remote 音源不发请求，直接进入错误态', () async {    await provider.play(
       const AudioItem(
         id: 'public_1',

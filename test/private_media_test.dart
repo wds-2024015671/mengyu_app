@@ -2,7 +2,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mengyu_app/data/repositories/private_media_repository.dart';
 import 'package:mengyu_app/models/private_media.dart';
 import 'package:mengyu_app/pages/tabs/widgets/sound_list_entry.dart';
+import 'package:mengyu_app/providers/demo_visibility_provider.dart';
 import 'package:mengyu_app/providers/private_media_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class _FakeRepo implements PrivateMediaRepository {
   final List<PrivateMedia> items = <PrivateMedia>[];
@@ -37,6 +39,13 @@ class _FakeRepo implements PrivateMediaRepository {
   Future<void> delete(int id) async =>
       items.removeWhere((PrivateMedia item) => item.id == id);
   @override
+  Future<int> deleteMany(Iterable<int> ids) async {
+    final Set<int> targets = ids.toSet();
+    final int before = items.length;
+    items.removeWhere((PrivateMedia item) => targets.contains(item.id));
+    return before - items.length;
+  }
+  @override
   Future<bool> existsByUrl(String url) async =>
       items.any((PrivateMedia item) => item.sourceUrl == url);
 }
@@ -67,6 +76,20 @@ void main() {
     expect(formatMediaDuration(3723000), '01:02:03');
     expect(formatMediaDuration(65000), '01:05');
     expect(formatMediaDuration(0), '—');
+  });
+
+  test('演示内容删除标记跨实例保存', () async {
+    SharedPreferences.setMockInitialValues(<String, Object>{});
+    final DemoVisibilityProvider first = DemoVisibilityProvider();
+    await first.ensureLoaded();
+    await first.hide(<String>['demo_sound_local_rain']);
+    expect(first.isHidden('demo_sound_local_rain'), isTrue);
+
+    final DemoVisibilityProvider second = DemoVisibilityProvider();
+    await second.ensureLoaded();
+    expect(second.isHidden('demo_sound_local_rain'), isTrue);
+    await second.reset();
+    expect(second.isHidden('demo_sound_local_rain'), isFalse);
   });
 
   test('私人库 Provider：导入后立即可用，按类型分组', () async {

@@ -24,6 +24,7 @@ import '../data/services/sleep_notification_service.dart';
 import '../data/services/sleep_tracking_service.dart';
 import 'auth_provider.dart';
 import 'avatar_provider.dart';
+import 'demo_visibility_provider.dart';
 import 'diary_provider.dart';
 import 'favorite_provider.dart';
 import 'player_provider.dart';
@@ -81,6 +82,9 @@ List<SingleChildWidget> buildAppProviders({
       create: (_) => PrivateMediaProvider(
         LocalPrivateMediaRepository(PrivateMediaDao(database)),
       ),
+    ),
+    ChangeNotifierProvider<DemoVisibilityProvider>(
+      create: (_) => DemoVisibilityProvider(),
     ),
     ChangeNotifierProvider<FavoriteProvider>(
       create: (_) => FavoriteProvider(const LocalFavoriteRepository()),

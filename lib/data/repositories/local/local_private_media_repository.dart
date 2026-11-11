@@ -35,5 +35,8 @@ class LocalPrivateMediaRepository implements PrivateMediaRepository {
   Future<void> delete(int id) => _dao.delete(id);
 
   @override
+  Future<int> deleteMany(Iterable<int> ids) => _dao.deleteMany(ids);
+
+  @override
   Future<bool> existsByUrl(String url) => _dao.existsByUrl(url);
 }

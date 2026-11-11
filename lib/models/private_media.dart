@@ -4,7 +4,7 @@ enum PrivateMediaType { audio, video }
 
 enum PrivateMediaStatus { downloading, ready, failed }
 
-/// 私人库条目：来自公开链接导入，文件只保存在本机。
+/// 私人库条目：来自手机本地导入，文件只保存在本机。
 class PrivateMedia {
   const PrivateMedia({
     required this.id,

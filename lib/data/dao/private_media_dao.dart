@@ -35,6 +35,21 @@ class PrivateMediaDao {
     await db.delete(table, where: 'id = ?', whereArgs: <Object?>[id]);
   }
 
+  Future<int> deleteMany(Iterable<int> ids) async {
+    final List<int> targets = ids.toSet().toList(growable: false);
+    if (targets.isEmpty) {
+      return 0;
+    }
+    final Database db = await _db;
+    final String placeholders =
+        List<String>.filled(targets.length, '?').join(',');
+    return db.delete(
+      table,
+      where: 'id IN ($placeholders)',
+      whereArgs: targets,
+    );
+  }
+
   Future<List<PrivateMedia>> queryAll() async {
     final Database db = await _db;
     final List<Map<String, Object?>> rows = await db.query(

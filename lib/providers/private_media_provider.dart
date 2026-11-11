@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 
 import '../core/errors/app_exception.dart';
 import '../data/repositories/private_media_repository.dart';
+import '../data/services/private_media_files.dart';
 import '../models/private_media.dart';
 
 /// 私人库状态：导入成功后立即 notify，列表与声屿/视频区同步。
@@ -74,15 +75,35 @@ class PrivateMediaProvider extends ChangeNotifier {
   }
 
   Future<bool> deleteMedia(int id) async {
+    return await deleteByIds(<int>{id}) > 0;
+  }
+
+  Future<int> deleteByIds(Iterable<int> ids) async {
+    final Set<int> targets = ids.toSet();
+    if (targets.isEmpty) {
+      return 0;
+    }
+    final List<PrivateMedia> removing = _media
+        .where((PrivateMedia item) => targets.contains(item.id))
+        .toList(growable: false);
     try {
-      await _repository.delete(id);
-      _media = _media.where((PrivateMedia item) => item.id != id).toList();
+      final int deleted = await _repository.deleteMany(targets);
+      _media = _media
+          .where((PrivateMedia item) => !targets.contains(item.id))
+          .toList(growable: false);
       notifyListeners();
-      return true;
+      for (final PrivateMedia item in removing) {
+        try {
+          await deletePrivateMediaFile(item.localPath);
+        } catch (_) {
+          // DB 已删除；单个文件清理失败不把记录恢复回来。
+        }
+      }
+      return deleted;
     } catch (error) {
       _error = AppException.describe(error, fallback: '私人库删除失败');
       notifyListeners();
-      return false;
+      return -1;
     }
   }
 

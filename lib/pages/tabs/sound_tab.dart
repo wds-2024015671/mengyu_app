@@ -5,10 +5,13 @@ import '../../core/routes/app_routes.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/theme/app_tokens.dart';
 import '../../models/audio_item.dart';
+import '../../models/private_media.dart';
+import '../../providers/demo_visibility_provider.dart';
 import '../../providers/private_media_provider.dart';
 import '../../providers/sound_provider.dart';
 import '../../widgets/app_background.dart';
 import '../../widgets/section_header.dart';
+import '../sound/all_media_page.dart';
 import 'widgets/private_import_launcher.dart';
 import 'widgets/sound_header.dart';
 import 'widgets/sound_catalog.dart';
@@ -27,8 +30,6 @@ class SoundTab extends StatefulWidget {
 class _SoundTabState extends State<SoundTab> {
   final TextEditingController _search = TextEditingController();
   final ScrollController _scroll = ScrollController();
-  final GlobalKey _soundKey = GlobalKey();
-  final GlobalKey _videoKey = GlobalKey();
   Timer? _debounce;
   String _query = '';
   @override
@@ -61,6 +62,7 @@ class _SoundTabState extends State<SoundTab> {
       sound.loadLocal();
     }
     context.read<PrivateMediaProvider>().ensureLoaded();
+    context.read<DemoVisibilityProvider>().ensureLoaded();
   }
   void _onQueryChanged(String value) {
     _debounce?.cancel();
@@ -86,30 +88,31 @@ class _SoundTabState extends State<SoundTab> {
       const SnackBar(content: Text('已加入私人库')),
     );
   }
-  Future<void> _scrollTo(GlobalKey key) async {
-    final BuildContext? target = key.currentContext;
-    if (target != null) {
-      await Scrollable.ensureVisible(
-        target,
-        duration: AppMotion.base,
-        curve: AppMotion.curve,
-        alignment: 0,
-      );
-    }
+  Future<void> _openAll(PrivateMediaType type) async {
+    await Navigator.push<void>(
+      context,
+      MaterialPageRoute<void>(
+        builder: (BuildContext pageContext) => AllMediaPage(type: type),
+      ),
+    );
   }
   @override
   Widget build(BuildContext context) {
     final SoundProvider sound = context.watch<SoundProvider>();
     final PrivateMediaProvider private =
         context.watch<PrivateMediaProvider>();
+    final DemoVisibilityProvider visibility =
+        context.watch<DemoVisibilityProvider>();
     final List<SoundListEntry> sounds = buildSoundEntries(
       sound: sound,
       private: private,
       query: _query,
+      hiddenDemoKeys: visibility.hidden,
     );
     final List<VideoEntry> videos = buildVideoEntries(
       private: private,
       query: _query,
+      hiddenDemoKeys: visibility.hidden,
     );
     return AppBackground(
       tint: context.c.tintSound,
@@ -133,7 +136,6 @@ class _SoundTabState extends State<SoundTab> {
               ),
             ),
             KeyedSubtree(
-              key: _soundKey,
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: AppSpacing.page),
                 child: Column(
@@ -142,7 +144,7 @@ class _SoundTabState extends State<SoundTab> {
                     SectionHeader(
                       title: '全部声音',
                       actionLabel: '更多',
-                      onAction: () => _scrollTo(_soundKey),
+                      onAction: () => _openAll(PrivateMediaType.audio),
                       padding: const EdgeInsets.only(
                         top: AppSpacing.section,
                         bottom: AppSpacing.sm,
@@ -160,7 +162,6 @@ class _SoundTabState extends State<SoundTab> {
               ),
             ),
             KeyedSubtree(
-              key: _videoKey,
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: AppSpacing.page),
                 child: Column(
@@ -169,7 +170,7 @@ class _SoundTabState extends State<SoundTab> {
                     SectionHeader(
                       title: '全部视频',
                       actionLabel: '更多',
-                      onAction: () => _scrollTo(_videoKey),
+                      onAction: () => _openAll(PrivateMediaType.video),
                       padding: const EdgeInsets.only(
                         top: AppSpacing.section,
                         bottom: AppSpacing.sm,

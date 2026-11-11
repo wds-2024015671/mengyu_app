@@ -1,13 +1,9 @@
 import 'dart:async';
-
 import 'package:flutter/foundation.dart';
-
 import '../errors/app_exception.dart';
 import '../../models/audio_item.dart';
 import 'audio_engine.dart';
-
 enum PlayerStatus { idle, loading, playing, paused, error }
-
 /// 音频状态机：唯一引擎、源选择、进度、音量、错误。
 ///
 /// 只管“声音”，不碰定时器与数据库；PlayerProvider 在它之上叠加
@@ -15,14 +11,11 @@ enum PlayerStatus { idle, loading, playing, paused, error }
 class PlayerPlayback extends ChangeNotifier {
   PlayerPlayback({required AudioEngine Function() engineFactory})
       : _engineFactory = engineFactory;
-
   final AudioEngine Function() _engineFactory;
-
   AudioEngine? _engine;
   StreamSubscription<Duration>? _positionSub;
   StreamSubscription<Duration>? _durationSub;
   StreamSubscription<AudioEngineEvent>? _eventSub;
-
   AudioItem? _current;
   PlayerStatus _status = PlayerStatus.idle;
   Duration _position = Duration.zero;
@@ -31,10 +24,8 @@ class PlayerPlayback extends ChangeNotifier {
   String? _error;
   int _playToken = 0;
   bool _disposed = false;
-
   /// 播放真正开始后回调；PlayerProvider 用它记录 started_at。
   VoidCallback? onPlayStarted;
-
   AudioItem? get current => _current;
   PlayerStatus get status => _status;
   Duration get position => _position;
@@ -43,7 +34,6 @@ class PlayerPlayback extends ChangeNotifier {
   String? get error => _error;
   bool get isPlaying => _status == PlayerStatus.playing;
   bool get isLoading => _status == PlayerStatus.loading;
-
   AudioEngine _ensureEngine() {
     final AudioEngine? existing = _engine;
     if (existing != null) {
@@ -56,7 +46,6 @@ class PlayerPlayback extends ChangeNotifier {
     _eventSub = created.eventStream.listen(_handleEvent);
     return created;
   }
-
   Future<void> play(AudioItem item) async {
     final int token = ++_playToken;
     _current = item;
@@ -67,7 +56,6 @@ class PlayerPlayback extends ChangeNotifier {
     _status = PlayerStatus.loading;
     _error = null;
     notifyListeners();
-
     try {
       final AudioEngine engine = _ensureEngine();
       await engine.setVolume(_volume);
@@ -104,7 +92,6 @@ class PlayerPlayback extends ChangeNotifier {
       notifyListeners();
     }
   }
-
   Future<void> pause() async {
     if (_status != PlayerStatus.playing) {
       return;
@@ -117,7 +104,6 @@ class PlayerPlayback extends ChangeNotifier {
     _status = PlayerStatus.paused;
     notifyListeners();
   }
-
   Future<void> resume() async {
     if (_current == null ||
         _status == PlayerStatus.playing ||
@@ -138,7 +124,6 @@ class PlayerPlayback extends ChangeNotifier {
       notifyListeners();
     }
   }
-
   /// 页面退出：作废尚未完成的 play，并暂停正在播放/加载的音频。
   Future<void> leave() async {
     _playToken++;
@@ -156,7 +141,27 @@ class PlayerPlayback extends ChangeNotifier {
     _status = PlayerStatus.paused;
     notifyListeners();
   }
-
+  /// 当前媒体被删除：停止并清空播放器，避免继续播放已不存在的文件。
+  Future<void> clear() async {
+    _playToken++;
+    final AudioEngine? engine = _engine;
+    if (engine != null) {
+      try {
+        await engine.pause();
+      } catch (_) {
+        // 文件已被删除时暂停可能失败，仍需清空 UI 状态。
+      }
+    }
+    if (_disposed) {
+      return;
+    }
+    _current = null;
+    _status = PlayerStatus.idle;
+    _position = Duration.zero;
+    _duration = Duration.zero;
+    _error = null;
+    notifyListeners();
+  }
   Future<void> setVolume(double value) async {
     final double next = value.clamp(0.0, 1.0).toDouble();
     if ((next - _volume).abs() < 0.001) {
@@ -173,7 +178,6 @@ class PlayerPlayback extends ChangeNotifier {
       }
     }
   }
-
   Future<void> seek(Duration value) async {
     if (_duration <= Duration.zero) {
       return;
@@ -192,7 +196,6 @@ class PlayerPlayback extends ChangeNotifier {
       }
     }
   }
-
   void _handlePosition(Duration value) {
     if (_disposed || value == _position) {
       return;
@@ -200,7 +203,6 @@ class PlayerPlayback extends ChangeNotifier {
     _position = value;
     notifyListeners();
   }
-
   void _handleDuration(Duration value) {
     if (_disposed || value <= Duration.zero || value == _duration) {
       return;
@@ -208,7 +210,6 @@ class PlayerPlayback extends ChangeNotifier {
     _duration = value;
     notifyListeners();
   }
-
   void _handleEvent(AudioEngineEvent event) {
     if (_disposed) {
       return;
@@ -228,7 +229,6 @@ class PlayerPlayback extends ChangeNotifier {
         break;
     }
   }
-
   @override
   void dispose() {
     _disposed = true;

@@ -22,6 +22,8 @@ class SoundListEntry {
   final PrivateMedia? privateMedia;
 
   bool get isPrivate => privateMedia != null;
+  String get key =>
+      isPrivate ? 'private_${privateMedia!.id}' : 'demo_sound_${item.id}';
 }
 
 class SoundDemo {
@@ -60,6 +62,7 @@ const List<SoundDemo> kSoundDemos = <SoundDemo>[
 /// 视频区的展示项；demo 无本地文件，导入项有 localPath。
 class VideoEntry {
   const VideoEntry({
+    required this.id,
     required this.title,
     required this.platform,
     required this.durationLabel,
@@ -67,6 +70,7 @@ class VideoEntry {
     this.privateMedia,
   });
 
+  final String id;
   final String title;
   final String platform;
   final String durationLabel;
@@ -74,54 +78,63 @@ class VideoEntry {
   final PrivateMedia? privateMedia;
 
   bool get isPrivate => privateMedia != null;
+  String get key => isPrivate ? 'private_${privateMedia!.id}' : 'demo_video_$id';
 
   String? get localPath => privateMedia?.localPath;
 }
 
 const List<VideoEntry> kVideoDemos = <VideoEntry>[
   VideoEntry(
+    id: 'asmr1',
     title: '轻触发音',
     platform: '本地',
     durationLabel: '01:00',
     assetPath: 'assets/videos/asmr1.mp4',
   ),
   VideoEntry(
+    id: 'asmr2',
     title: '柔软刷子',
     platform: '本地',
     durationLabel: '01:00',
     assetPath: 'assets/videos/asmr2.mp4',
   ),
   VideoEntry(
+    id: 'asmr3',
     title: '近距离敲击',
     platform: '本地',
     durationLabel: '01:00',
     assetPath: 'assets/videos/asmr3.mp4',
   ),
   VideoEntry(
+    id: 'asmr4',
     title: '海绵刷触发',
     platform: '本地',
     durationLabel: '01:00',
     assetPath: 'assets/videos/asmr4.mp4',
   ),
   VideoEntry(
+    id: 'nature1',
     title: '炉火',
     platform: '本地',
     durationLabel: '01:00',
     assetPath: 'assets/videos/nature1.mp4',
   ),
   VideoEntry(
+    id: 'nature2',
     title: '溪流',
     platform: '本地',
     durationLabel: '01:00',
     assetPath: 'assets/videos/nature2.mp4',
   ),
   VideoEntry(
+    id: 'nature3',
     title: '风吹草叶',
     platform: '本地',
     durationLabel: '01:00',
     assetPath: 'assets/videos/nature3.mp4',
   ),
   VideoEntry(
+    id: 'nature4',
     title: '海浪',
     platform: '本地',
     durationLabel: '01:00',

@@ -11,9 +11,13 @@ List<SoundListEntry> buildSoundEntries({
   required SoundProvider sound,
   required PrivateMediaProvider private,
   required String query,
+  Set<String> hiddenDemoKeys = const <String>{},
 }) {
   final List<SoundListEntry> entries = <SoundListEntry>[];
   for (final SoundDemo demo in kSoundDemos) {
+    if (hiddenDemoKeys.contains('demo_sound_${demo.id}')) {
+      continue;
+    }
     entries.add(
       SoundListEntry(
         item: _audioFor(demo, sound.localAudios),
@@ -47,11 +51,14 @@ List<SoundListEntry> buildSoundEntries({
 List<VideoEntry> buildVideoEntries({
   required PrivateMediaProvider private,
   required String query,
+  Set<String> hiddenDemoKeys = const <String>{},
 }) {
   final List<VideoEntry> videos = <VideoEntry>[
-    ...kVideoDemos,
+    for (final VideoEntry video in kVideoDemos)
+      if (!hiddenDemoKeys.contains(video.key)) video,
     for (final PrivateMedia media in private.videos)
       VideoEntry(
+        id: 'private_video_${media.id}',
         title: media.title,
         platform: media.platform,
         durationLabel: formatMediaDuration(media.durationMs),
