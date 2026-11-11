@@ -2,12 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mengyu_app/core/routes/app_routes.dart';
 import 'package:mengyu_app/core/theme/app_theme.dart';
-import 'package:mengyu_app/data/repositories/local/local_favorite_repository.dart';
 import 'package:mengyu_app/data/repositories/local/local_sound_repository.dart';
 import 'package:mengyu_app/pages/player/player_page.dart';
 import 'package:mengyu_app/pages/player/widgets/player_progress_ring.dart';
 import 'package:mengyu_app/pages/timer/timer_page.dart';
-import 'package:mengyu_app/providers/favorite_provider.dart';
 import 'package:mengyu_app/providers/player_provider.dart';
 import 'package:mengyu_app/providers/settings_provider.dart';
 import 'package:mengyu_app/providers/sound_provider.dart';
@@ -21,7 +19,6 @@ import 'support/fake_settings.dart';
 
 typedef PlayerHarness = ({
   PlayerProvider player,
-  FavoriteProvider favorites,
   FakeAudioEngine engine,
 });
 
@@ -42,9 +39,6 @@ Future<PlayerHarness> _pumpPlayer(
     sessionRepository: FakeSessionRepository(),
     clock: DateTime.now,
   );
-  final FavoriteProvider favorites = FavoriteProvider(
-    const LocalFavoriteRepository(),
-  );
   final SettingsProvider settings = SettingsProvider(
     FakeSettingsRepository(defaultTimerMinutes: defaultTimerMinutes),
     FakeAppDataCleaner(),
@@ -53,7 +47,6 @@ Future<PlayerHarness> _pumpPlayer(
   await settings.load();
   await sound.loadLocal();
   addTearDown(player.dispose);
-  addTearDown(favorites.dispose);
   addTearDown(settings.dispose);
   addTearDown(sound.dispose);
 
@@ -61,7 +54,6 @@ Future<PlayerHarness> _pumpPlayer(
     MultiProvider(
       providers: [
         ChangeNotifierProvider<PlayerProvider>.value(value: player),
-        ChangeNotifierProvider<FavoriteProvider>.value(value: favorites),
         ChangeNotifierProvider<SettingsProvider>.value(value: settings),
         ChangeNotifierProvider<SoundProvider>.value(value: sound),
       ],
@@ -82,7 +74,7 @@ Future<PlayerHarness> _pumpPlayer(
     ),
   );
   await tester.pumpAndSettle();
-  return (player: player, favorites: favorites, engine: engine);
+  return (player: player, engine: engine);
 }
 
 void main() {
@@ -110,7 +102,7 @@ void main() {
     );
   });
 
-  testWidgets('播放页：自动播放 / 暂停 / 收藏 / 定时', (WidgetTester tester) async {
+  testWidgets('播放页：自动播放 / 暂停 / 时间 / 定时', (WidgetTester tester) async {
     final PlayerHarness harness = await _pumpPlayer(tester);
 
     expect(find.text('正在播放'), findsOneWidget);
@@ -121,6 +113,8 @@ void main() {
     expect(find.text('00:00 · 剩余 00:00'), findsOneWidget);
     expect(find.byType(Slider), findsNothing);
     expect(find.byType(LinearProgressIndicator), findsNothing);
+    expect(find.byTooltip('收藏'), findsNothing);
+    expect(find.byTooltip('更多'), findsNothing);
     expect(harness.engine.playedAssets, <String>['audio/rain_loop.wav']);
     expect(harness.player.status, PlayerStatus.playing);
 
@@ -136,10 +130,6 @@ void main() {
     expect(harness.player.status, PlayerStatus.paused);
     expect(find.byTooltip('播放'), findsOneWidget);
 
-    await tester.tap(find.byTooltip('收藏'));
-    await tester.pumpAndSettle();
-    expect(find.byTooltip('取消收藏'), findsOneWidget);
-    expect(harness.favorites.isFavorite('local_rain'), isTrue);
     expect(find.text('未设定时'), findsOneWidget);
 
     await tester.tap(find.byTooltip('定时'));

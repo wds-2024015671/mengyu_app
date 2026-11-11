@@ -23,22 +23,27 @@ class VideoArtwork extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final double screenWidth = MediaQuery.sizeOf(context).width;
+    final double preferred = screenWidth * 5 / 7;
+    final double maxInner = screenWidth - AppSpacing.page * 2 - 50;
+    final double diameter = preferred < maxInner ? preferred : maxInner;
+    final double outer = diameter + 50;
     return SizedBox(
-      width: 230,
-      height: 230,
+      width: outer,
+      height: outer,
       child: Stack(
         alignment: Alignment.center,
         children: <Widget>[
           CustomPaint(
-            size: const Size.square(230),
+            size: Size.square(outer),
             painter: PlayerDashedRing(
               context.c.textPrimary.withOpacity(0.12),
             ),
           ),
           ClipOval(
             child: SizedBox(
-              width: 180,
-              height: 180,
+              width: diameter,
+              height: diameter,
               child: ColoredBox(
                 color: context.c.cover,
                 child: _content(context),
@@ -53,12 +58,30 @@ class VideoArtwork extends StatelessWidget {
   Widget _content(BuildContext context) {
     final VideoPlayerController? value = controller;
     if (!ready || value == null) {
-      return Center(
-        child: Icon(
-          failed ? Icons.videocam_off_outlined : Icons.play_circle_outline,
-          size: 64,
-          color: context.c.textSecondary,
-        ),
+      return Stack(
+        fit: StackFit.expand,
+        children: <Widget>[
+          if (video.coverAsset != null)
+            Image.asset(
+              video.coverAsset!,
+              fit: BoxFit.cover,
+              errorBuilder: (
+                BuildContext context,
+                Object error,
+                StackTrace? stackTrace,
+              ) =>
+                  ColoredBox(color: context.c.cover),
+            )
+          else
+            ColoredBox(color: context.c.cover),
+          Center(
+            child: Icon(
+              failed ? Icons.videocam_off_outlined : Icons.play_circle_outline,
+              size: 64,
+              color: context.c.textSecondary,
+            ),
+          ),
+        ],
       );
     }
     final Size size = value.value.size;

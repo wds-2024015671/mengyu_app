@@ -10,8 +10,6 @@ class PlayerControls extends StatelessWidget {
   const PlayerControls({
     super.key,
     required this.player,
-    required this.isFavorite,
-    required this.onToggleFavorite,
     required this.onOpenTimer,
     required this.canPrevious,
     required this.canNext,
@@ -20,8 +18,6 @@ class PlayerControls extends StatelessWidget {
   });
 
   final PlayerProvider player;
-  final bool isFavorite;
-  final VoidCallback onToggleFavorite;
   final VoidCallback onOpenTimer;
   final bool canPrevious;
   final bool canNext;
@@ -34,12 +30,7 @@ class PlayerControls extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: <Widget>[
-        _IconControl(
-          tooltip: isFavorite ? '取消收藏' : '收藏',
-          icon: isFavorite ? Icons.favorite : Icons.favorite_border,
-          color: isFavorite ? context.c.secondary : context.c.textSecondary,
-          onPressed: onToggleFavorite,
-        ),
+        const SizedBox(width: 44, height: 44),
         _IconControl(
           tooltip: '上一首',
           icon: Icons.skip_previous,

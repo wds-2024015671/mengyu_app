@@ -63,11 +63,20 @@ class _VideoTile extends StatelessWidget {
             child: Stack(
               children: <Widget>[
                 Positioned.fill(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: context.c.cover,
-                      borderRadius: BorderRadius.circular(AppRadius.control),
-                    ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(AppRadius.control),
+                    child: video.coverAsset == null
+                        ? ColoredBox(color: context.c.cover)
+                        : Image.asset(
+                            video.coverAsset!,
+                            fit: BoxFit.cover,
+                            errorBuilder: (
+                              BuildContext context,
+                              Object error,
+                              StackTrace? stackTrace,
+                            ) =>
+                                ColoredBox(color: context.c.cover),
+                          ),
                   ),
                 ),
                 Center(

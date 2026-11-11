@@ -67,6 +67,7 @@ class VideoEntry {
     required this.platform,
     required this.durationLabel,
     this.assetPath,
+    this.coverAsset,
     this.privateMedia,
   });
 
@@ -75,6 +76,7 @@ class VideoEntry {
   final String platform;
   final String durationLabel;
   final String? assetPath;
+  final String? coverAsset;
   final PrivateMedia? privateMedia;
 
   bool get isPrivate => privateMedia != null;
@@ -90,6 +92,7 @@ const List<VideoEntry> kVideoDemos = <VideoEntry>[
     platform: '本地',
     durationLabel: '01:00',
     assetPath: 'assets/videos/asmr1.mp4',
+    coverAsset: 'assets/covers/asmr1.jpg',
   ),
   VideoEntry(
     id: 'asmr2',
@@ -97,6 +100,7 @@ const List<VideoEntry> kVideoDemos = <VideoEntry>[
     platform: '本地',
     durationLabel: '01:00',
     assetPath: 'assets/videos/asmr2.mp4',
+    coverAsset: 'assets/covers/asmr2.jpg',
   ),
   VideoEntry(
     id: 'asmr3',
@@ -104,6 +108,7 @@ const List<VideoEntry> kVideoDemos = <VideoEntry>[
     platform: '本地',
     durationLabel: '01:00',
     assetPath: 'assets/videos/asmr3.mp4',
+    coverAsset: 'assets/covers/asmr3.jpg',
   ),
   VideoEntry(
     id: 'asmr4',
@@ -111,6 +116,7 @@ const List<VideoEntry> kVideoDemos = <VideoEntry>[
     platform: '本地',
     durationLabel: '01:00',
     assetPath: 'assets/videos/asmr4.mp4',
+    coverAsset: 'assets/covers/asmr4.jpg',
   ),
   VideoEntry(
     id: 'nature1',
@@ -118,6 +124,7 @@ const List<VideoEntry> kVideoDemos = <VideoEntry>[
     platform: '本地',
     durationLabel: '01:00',
     assetPath: 'assets/videos/nature1.mp4',
+    coverAsset: 'assets/covers/nature1.jpg',
   ),
   VideoEntry(
     id: 'nature2',
@@ -125,6 +132,7 @@ const List<VideoEntry> kVideoDemos = <VideoEntry>[
     platform: '本地',
     durationLabel: '01:00',
     assetPath: 'assets/videos/nature2.mp4',
+    coverAsset: 'assets/covers/nature2.jpg',
   ),
   VideoEntry(
     id: 'nature3',
@@ -132,6 +140,7 @@ const List<VideoEntry> kVideoDemos = <VideoEntry>[
     platform: '本地',
     durationLabel: '01:00',
     assetPath: 'assets/videos/nature3.mp4',
+    coverAsset: 'assets/covers/nature3.jpg',
   ),
   VideoEntry(
     id: 'nature4',
@@ -139,6 +148,7 @@ const List<VideoEntry> kVideoDemos = <VideoEntry>[
     platform: '本地',
     durationLabel: '01:00',
     assetPath: 'assets/videos/nature4.mp4',
+    coverAsset: 'assets/covers/nature4.jpg',
   ),
 ];
 

@@ -88,21 +88,40 @@ class _VideoTile extends StatelessWidget {
                           )
                         : null,
                   ),
-                  child: Center(
-                    child: Container(
-                      width: 28,
-                      height: 28,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: context.c.sheet.withOpacity(0.55),
-                        border: Border.all(color: context.c.textTertiary),
+                  clipBehavior: Clip.antiAlias,
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: <Widget>[
+                      if (item.video?.coverAsset != null)
+                        Image.asset(
+                          item.video!.coverAsset!,
+                          fit: BoxFit.cover,
+                          errorBuilder: (
+                            BuildContext context,
+                            Object error,
+                            StackTrace? stackTrace,
+                          ) =>
+                              ColoredBox(color: context.c.cover),
+                        )
+                      else
+                        ColoredBox(color: context.c.cover),
+                      Center(
+                        child: Container(
+                          width: 28,
+                          height: 28,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: context.c.sheet.withOpacity(0.55),
+                            border: Border.all(color: context.c.textTertiary),
+                          ),
+                          child: Icon(
+                            Icons.play_arrow,
+                            size: 16,
+                            color: context.c.textSecondary,
+                          ),
+                        ),
                       ),
-                      child: Icon(
-                        Icons.play_arrow,
-                        size: 16,
-                        color: context.c.textSecondary,
-                      ),
-                    ),
+                    ],
                   ),
                 ),
                 Positioned(

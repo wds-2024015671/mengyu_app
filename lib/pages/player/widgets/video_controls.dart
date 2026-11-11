@@ -9,10 +9,8 @@ class VideoControls extends StatelessWidget {
     super.key,
     required this.progress,
     required this.isPlaying,
-    required this.isFavorite,
     required this.canPrevious,
     required this.canNext,
-    required this.onToggleFavorite,
     required this.onPrevious,
     required this.onNext,
     required this.onTogglePlay,
@@ -21,10 +19,8 @@ class VideoControls extends StatelessWidget {
 
   final double progress;
   final bool isPlaying;
-  final bool isFavorite;
   final bool canPrevious;
   final bool canNext;
-  final VoidCallback onToggleFavorite;
   final VoidCallback onPrevious;
   final VoidCallback onNext;
   final VoidCallback onTogglePlay;
@@ -35,12 +31,7 @@ class VideoControls extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: <Widget>[
-        _VideoIcon(
-          tooltip: isFavorite ? '取消收藏' : '收藏',
-          icon: isFavorite ? Icons.favorite : Icons.favorite_border,
-          color: isFavorite ? context.c.secondary : context.c.textSecondary,
-          onPressed: onToggleFavorite,
-        ),
+        const SizedBox(width: 44, height: 44),
         _VideoIcon(
           tooltip: '上一首',
           icon: Icons.skip_previous,

@@ -8,7 +8,6 @@ import '../../core/routes/app_routes.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/theme/app_tokens.dart';
 import '../../providers/demo_visibility_provider.dart';
-import '../../providers/favorite_provider.dart';
 import '../../providers/private_media_provider.dart';
 import '../../providers/settings_provider.dart';
 import '../tabs/widgets/sound_catalog.dart';
@@ -157,7 +156,6 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
     final VideoPlayerValue value =
         controller?.value ?? const VideoPlayerValue(duration: Duration.zero);
     final double progress = mediaProgress(value.position, value.duration);
-    final FavoriteProvider favorites = context.watch<FavoriteProvider>();
     final List<VideoEntry> playlist = _playlist();
     final int index =
         playlist.indexWhere((VideoEntry item) => item.key == _video.key);
@@ -194,7 +192,6 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
                 children: <Widget>[
                   PlayerTopBar(
                     onBack: () => Navigator.maybePop(context),
-                    onMore: _openTimer,
                   ),
                   Expanded(
                     child: VideoNowPlaying(
@@ -207,10 +204,8 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
                   VideoControls(
                     progress: progress,
                     isPlaying: value.isPlaying,
-                    isFavorite: favorites.isFavorite(_video.key),
                     canPrevious: index > 0,
                     canNext: index >= 0 && index < playlist.length - 1,
-                    onToggleFavorite: () => favorites.toggle(_video.key),
                     onPrevious: () => _step(-1),
                     onNext: () => _step(1),
                     onTogglePlay: _toggle,

@@ -126,6 +126,8 @@ void main() {
     expect(find.text('00:00 · 剩余 00:00'), findsOneWidget);
     expect(find.text('本地'), findsNothing);
     expect(find.byType(Slider), findsNothing);
+    expect(find.byTooltip('收藏'), findsNothing);
+    expect(find.byTooltip('更多'), findsNothing);
     await tester.tap(find.byTooltip('返回'));
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);

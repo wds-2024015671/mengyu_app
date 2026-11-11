@@ -6,7 +6,6 @@ import 'package:provider/provider.dart';
 import '../../core/routes/app_routes.dart';
 import '../../core/theme/app_theme.dart';
 import '../../models/audio_item.dart';
-import '../../providers/favorite_provider.dart';
 import '../../providers/player_provider.dart';
 import '../../providers/settings_provider.dart';
 import '../../providers/sound_provider.dart';
@@ -124,12 +123,10 @@ class _PlayerPageState extends State<PlayerPage> {
   }
   @override
   Widget build(BuildContext context) {
-    final FavoriteProvider favorites = context.watch<FavoriteProvider>();
     final List<AudioItem> local = context.watch<SoundProvider>().localAudios;
     final int index = local.indexWhere((AudioItem item) => item.id == _audio.id);
     final bool canPrevious = index > 0;
     final bool canNext = index >= 0 && index < local.length - 1;
-    final bool favorite = favorites.isFavorite(_audio.id);
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle(
@@ -163,7 +160,6 @@ class _PlayerPageState extends State<PlayerPage> {
                 children: <Widget>[
                   PlayerTopBar(
                     onBack: _handleBack,
-                    onMore: _openTimer,
                   ),
                   Expanded(
                     child: Selector<PlayerProvider, bool>(
@@ -186,8 +182,6 @@ class _PlayerPageState extends State<PlayerPage> {
                     ) {
                       return PlayerControls(
                         player: _player,
-                        isFavorite: favorite,
-                        onToggleFavorite: () => favorites.toggle(_audio.id),
                         onOpenTimer: _openTimer,
                         canPrevious: canPrevious,
                         canNext: canNext,

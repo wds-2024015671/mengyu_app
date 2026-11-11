@@ -45,6 +45,7 @@ flutter:
   # 这里先声明目录，保证后续直接放文件即可打包，不用再改 pubspec。
   assets:
     - assets/audio/
+    - assets/covers/
     - assets/images/
     - assets/videos/
 
