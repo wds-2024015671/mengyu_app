@@ -80,7 +80,7 @@ lib/
 - 360×800：`test/home_test.dart` 首页推荐卡 → 播放器、月迹切 tab、下拉刷新、未登录重定向
 - 360×800：`test/sound_test.dart` 声屿声音列表、视频大框、搜索、私人库弹层
 - 360×800：`test/upload_page_test.dart` 选文件、20MB 拦截、表单校验、成功 pop(true)、失败 SnackBar、未登录跳转
-- 360×800：`test/player_page_test.dart` 自动播放、暂停、收藏、定时、错误重试
+- 360×800：`test/player_page_test.dart` 自动播放、暂停、环形进度、时间、定时、错误重试
 - `/` → `/login` → `/home` 可跳；4 tab 可切；`/upload` 可从「我的 → 我的上传」打开
 - 返回不白屏：`/upload` 返回后仍停留在主框架
 - 未知路由、参数类型不符 → `NotFoundPage`
@@ -162,7 +162,8 @@ lib/
   “公共音频需要后端接入后才能播放”，不发网络请求；release mode 固定 `loop`。
 - 播放页：全屏夜空渐变 + Hero 封面（tag 与声屿声音行共用 `audio_cover_tag`）、
   封面/标题组在顶栏与控制区之间居中；中央 64 金色按钮外圈 80 环形进度，时间行下移到控制区下方。
-  进度/seek、暂停/继续、音量、收藏、定时；退出页面暂停并取消定时。
+  音频/视频共用竖屏结构，视频使用约 5/7 屏宽的圆形窗口裁切播放，无默认视频控制条。
+- 播放/暂停、上一首/下一首、定时；退出页面暂停并取消定时。
 - 定时：5/10/15/20 分钟快捷项 + 自定义 1–180 分钟，到 0 秒时暂停 + 写 `sleep_sessions` + SnackBar；
   Provider dispose / 退出播放页都会取消 Timer。
 - 声音仪式：首次播放记 startedAt；暂停/离开满 1 分钟 upsert 同一条记录（bed=开始、wake=当前、

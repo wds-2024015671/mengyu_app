@@ -191,7 +191,7 @@ void main() {
     });
   });
 
-  testWidgets('我的：资料 / 三项统计 / 收藏 / 设置 / 关于', (
+  testWidgets('我的：资料 / 两项统计 / 设置 / 关于', (
     WidgetTester tester,
   ) async {
     final ProfileHarness harness = await _pumpProfile(tester);
@@ -201,12 +201,11 @@ void main() {
     expect(find.text('小鱼'), findsOneWidget);
     expect(find.text('连续靠岸 4 天 · 加入 3 天'), findsOneWidget);
 
-    expect(find.text('收藏'), findsOneWidget);
+    expect(find.text('收藏'), findsNothing);
     expect(find.text('日记'), findsOneWidget);
     expect(find.text('仪式'), findsOneWidget);
-    expect(find.text('3'), findsOneWidget);
-    expect(find.text('1'), findsOneWidget);
-    expect(find.text('4'), findsOneWidget);
+    expect(find.text('1'), findsWidgets);
+    expect(find.text('4'), findsWidgets);
     expect(find.text('我的上传'), findsNothing);
     expect(find.text('上传数量'), findsNothing);
     expect(find.text('加入天数'), findsNothing);

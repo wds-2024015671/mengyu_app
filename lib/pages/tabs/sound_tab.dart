@@ -120,7 +120,7 @@ class _SoundTabState extends State<SoundTab> {
         bottom: false,
         child: ListView(
           controller: _scroll,
-          padding: const EdgeInsets.only(bottom: 100),
+          padding: const EdgeInsets.only(bottom: AppSpacing.section),
           children: <Widget>[
             SoundHeader(onAdd: _openImport),
             Padding(

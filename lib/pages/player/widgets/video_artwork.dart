@@ -4,9 +4,8 @@ import 'package:video_player/video_player.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../tabs/widgets/sound_list_entry.dart';
-import 'player_cover.dart';
 
-/// 视频分支的 230 虚线圆 + 180 圆形视频窗口，无默认控制条 / 黑边。
+/// 视频播放画面：按原始比例铺满宽度，完整显示，不裁切、不套圆形。
 class VideoArtwork extends StatelessWidget {
   const VideoArtwork({
     super.key,
@@ -23,90 +22,49 @@ class VideoArtwork extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final double screenWidth = MediaQuery.sizeOf(context).width;
-    final double preferred = screenWidth * 5 / 7;
-    final double maxInner = screenWidth - AppSpacing.page * 2 - 50;
-    final double diameter = preferred < maxInner ? preferred : maxInner;
-    final double outer = diameter + 50;
-    return SizedBox(
-      width: outer,
-      height: outer,
-      child: Stack(
-        alignment: Alignment.center,
-        children: <Widget>[
-          CustomPaint(
-            size: Size.square(outer),
-            painter: PlayerDashedRing(
-              context.c.textPrimary.withOpacity(0.12),
-            ),
-          ),
-          ClipOval(
-            child: SizedBox(
-              width: diameter,
-              height: diameter,
-              child: ColoredBox(
-                color: context.c.cover,
-                child: _content(context),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _content(BuildContext context) {
     final VideoPlayerController? value = controller;
-    if (!ready || value == null) {
-      return Stack(
-        fit: StackFit.expand,
-        children: <Widget>[
-          if (video.coverAsset != null)
-            Image.asset(
-              video.coverAsset!,
-              fit: BoxFit.cover,
-              errorBuilder: (
-                BuildContext context,
-                Object error,
-                StackTrace? stackTrace,
-              ) =>
-                  ColoredBox(color: context.c.cover),
-            )
-          else
-            ColoredBox(color: context.c.cover),
-          Center(
-            child: Icon(
-              failed ? Icons.videocam_off_outlined : Icons.play_circle_outline,
-              size: 64,
-              color: context.c.textSecondary,
-            ),
-          ),
-        ],
-      );
-    }
-    final Size size = value.value.size;
-    if (size.width <= 0 || size.height <= 0) {
-      return Center(
-        child: Icon(
-          Icons.play_circle_outline,
-          size: 64,
-          color: context.c.textSecondary,
-        ),
-      );
-    }
-    return FittedBox(
-      fit: BoxFit.cover,
-      clipBehavior: Clip.hardEdge,
-      child: SizedBox(
-        width: size.width,
-        height: size.height,
-        child: VideoPlayer(value),
+    final double ratio = ready && value != null && value.value.aspectRatio > 0
+        ? value.value.aspectRatio
+        : 16 / 9;
+    return AspectRatio(
+      aspectRatio: ratio,
+      child: ColoredBox(
+        color: context.c.cover,
+        child: ready && value != null
+            ? VideoPlayer(value)
+            : Stack(
+                fit: StackFit.expand,
+                children: <Widget>[
+                  if (video.coverAsset != null)
+                    Image.asset(
+                      video.coverAsset!,
+                      fit: BoxFit.cover,
+                      errorBuilder: (
+                        BuildContext context,
+                        Object error,
+                        StackTrace? stackTrace,
+                      ) =>
+                          ColoredBox(color: context.c.cover),
+                    )
+                  else
+                    ColoredBox(color: context.c.cover),
+                  Center(
+                    child: Icon(
+                      failed
+                          ? Icons.videocam_off_outlined
+                          : Icons.play_circle_outline,
+                      size: 64,
+                      color: context.c.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
       ),
     );
   }
 }
 
-/// 视频页的标题/副标题组，保持与音频页相同的中部结构。
+/// 视频页的标题/副标题组。
 class VideoNowPlaying extends StatelessWidget {
   const VideoNowPlaying({
     super.key,
@@ -134,12 +92,15 @@ class VideoNowPlaying extends StatelessWidget {
             failed: failed,
           ),
           const SizedBox(height: AppSpacing.xxl),
-          Text(
-            video.title,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            textAlign: TextAlign.center,
-            style: context.s.title,
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.page),
+            child: Text(
+              video.title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+              style: context.s.title,
+            ),
           ),
           const SizedBox(height: AppSpacing.sm),
           Text(

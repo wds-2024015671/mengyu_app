@@ -180,45 +180,54 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
             ),
           ),
           child: SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(
-                AppSpacing.page,
-                0,
-                AppSpacing.page,
-                AppSpacing.lg,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: <Widget>[
-                  PlayerTopBar(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: <Widget>[
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.page,
+                  ),
+                  child: PlayerTopBar(
                     onBack: () => Navigator.maybePop(context),
                   ),
-                  Expanded(
-                    child: VideoNowPlaying(
-                      video: _video,
-                      controller: controller,
-                      ready: _ready,
-                      failed: _failed,
-                    ),
+                ),
+                Expanded(
+                  child: VideoNowPlaying(
+                    video: _video,
+                    controller: controller,
+                    ready: _ready,
+                    failed: _failed,
                   ),
-                  VideoControls(
-                    progress: progress,
-                    isPlaying: value.isPlaying,
-                    canPrevious: index > 0,
-                    canNext: index >= 0 && index < playlist.length - 1,
-                    onPrevious: () => _step(-1),
-                    onNext: () => _step(1),
-                    onTogglePlay: _toggle,
-                    onTimer: _openTimer,
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.page,
+                    0,
+                    AppSpacing.page,
+                    AppSpacing.lg,
                   ),
-                  const SizedBox(height: AppSpacing.sm),
-                  VideoTimeFooter(
-                    position: value.position,
-                    duration: value.duration,
-                    timer: _remaining,
+                  child: Column(
+                    children: <Widget>[
+                      VideoControls(
+                        progress: progress,
+                        isPlaying: value.isPlaying,
+                        canPrevious: index > 0,
+                        canNext: index >= 0 && index < playlist.length - 1,
+                        onPrevious: () => _step(-1),
+                        onNext: () => _step(1),
+                        onTogglePlay: _toggle,
+                        onTimer: _openTimer,
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+                      VideoTimeFooter(
+                        position: value.position,
+                        duration: value.duration,
+                        timer: _remaining,
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),

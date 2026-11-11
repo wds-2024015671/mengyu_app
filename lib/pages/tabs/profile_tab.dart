@@ -8,7 +8,6 @@ import '../../data/services/avatar_service.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/avatar_provider.dart';
 import '../../providers/diary_provider.dart';
-import '../../providers/favorite_provider.dart';
 import '../../providers/sleep_provider.dart';
 import '../../widgets/app_background.dart';
 import 'widgets/avatar_sheet.dart';
@@ -19,7 +18,7 @@ import 'widgets/profile_stats.dart';
 import 'widgets/profile_tracking_status.dart';
 import 'widgets/settings_sheet.dart';
 
-/// v7 我的：资料、三项统计、收藏横向卡、设置/关于/退出。
+/// v7 我的：资料、两项统计、设置/关于/退出。
 class ProfileTab extends StatefulWidget {
   const ProfileTab({super.key, required this.active});
 
@@ -55,7 +54,6 @@ class _ProfileTabState extends State<ProfileTab> {
       context.read<AuthProvider>().ensureLoaded();
       context.read<SleepProvider>().ensureLoaded();
       context.read<DiaryProvider>().load();
-      context.read<FavoriteProvider>().ensureLoaded();
       context.read<AvatarProvider>().ensureLoaded();
     });
   }
@@ -137,7 +135,6 @@ class _ProfileTabState extends State<ProfileTab> {
   Widget build(BuildContext context) {
     final AuthProvider auth = context.watch<AuthProvider>();
     final SleepProvider sleep = context.watch<SleepProvider>();
-    final FavoriteProvider favorites = context.watch<FavoriteProvider>();
     final DiaryProvider diary = context.watch<DiaryProvider>();
     final AvatarProvider avatar = context.watch<AvatarProvider>();
     final int joinedDays = _joinedDays(auth);
@@ -149,7 +146,7 @@ class _ProfileTabState extends State<ProfileTab> {
         child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(
             AppSpacing.page,
-            AppSpacing.page,
+            AppSpacing.xxxl * 2 + AppSpacing.lg,
             AppSpacing.page,
             AppSpacing.xxxl,
           ),
@@ -174,11 +171,10 @@ class _ProfileTabState extends State<ProfileTab> {
               ),
               const SizedBox(height: AppSpacing.xxl),
               ProfileStats(
-                favorites: favorites.count,
                 diaries: diary.entries.length,
                 rituals: sleep.sessions.length,
               ),
-              const SizedBox(height: AppSpacing.xxl),
+              const SizedBox(height: AppSpacing.xxxl),
               ProfileEntries(
                 onSettings: _openSettings,
                 onAbout: () => showProfileAbout(context),

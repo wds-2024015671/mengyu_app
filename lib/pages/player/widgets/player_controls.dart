@@ -5,7 +5,7 @@ import 'package:provider/provider.dart';
 import '../../../providers/player_provider.dart';
 import 'player_progress_ring.dart';
 
-/// v7 播放控制：收藏 / 上一首 / 金色播放 / 下一首 / 定时列表。
+/// v7 播放控制：上一首 / 金色播放 / 下一首 / 定时列表。
 class PlayerControls extends StatelessWidget {
   const PlayerControls({
     super.key,
