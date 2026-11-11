@@ -24,7 +24,7 @@ class PlayerCover extends StatelessWidget {
           children: <Widget>[
             CustomPaint(
               size: const Size.square(230),
-              painter: _DashedRing(
+              painter: PlayerDashedRing(
                 context.c.textPrimary.withOpacity(0.12),
               ),
             ),
@@ -55,8 +55,8 @@ class PlayerCover extends StatelessWidget {
   }
 }
 
-class _DashedRing extends CustomPainter {
-  const _DashedRing(this.color);
+class PlayerDashedRing extends CustomPainter {
+  const PlayerDashedRing(this.color);
 
   final Color color;
 
@@ -77,6 +77,6 @@ class _DashedRing extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant _DashedRing oldDelegate) =>
+  bool shouldRepaint(covariant PlayerDashedRing oldDelegate) =>
       oldDelegate.color != color;
 }

@@ -3,22 +3,17 @@ import 'package:mengyu_app/core/theme/app_tokens.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../core/routes/app_routes.dart';
 import '../../core/theme/app_theme.dart';
 import '../../data/services/avatar_service.dart';
-import '../../models/audio_item.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/avatar_provider.dart';
 import '../../providers/diary_provider.dart';
 import '../../providers/favorite_provider.dart';
 import '../../providers/sleep_provider.dart';
-import '../../providers/sound_provider.dart';
 import '../../widgets/app_background.dart';
 import 'widgets/avatar_sheet.dart';
 import 'widgets/profile_dialogs.dart';
 import 'widgets/profile_entries.dart';
-import 'widgets/profile_favorite_sheet.dart';
-import 'widgets/profile_favorites.dart';
 import 'widgets/profile_header.dart';
 import 'widgets/profile_stats.dart';
 import 'widgets/profile_tracking_status.dart';
@@ -62,10 +57,6 @@ class _ProfileTabState extends State<ProfileTab> {
       context.read<DiaryProvider>().load();
       context.read<FavoriteProvider>().ensureLoaded();
       context.read<AvatarProvider>().ensureLoaded();
-      final SoundProvider sound = context.read<SoundProvider>();
-      if (sound.localAudios.isEmpty) {
-        sound.loadLocal();
-      }
     });
   }
 
@@ -76,32 +67,6 @@ class _ProfileTabState extends State<ProfileTab> {
     }
     final int days = DateTime.now().difference(joinedAt).inDays + 1;
     return days < 1 ? 1 : days;
-  }
-
-  Future<void> _openPlayer(AudioItem item) async {
-    await Navigator.pushNamed<bool?>(
-      context,
-      AppRoutes.player,
-      arguments: item,
-    );
-    if (mounted) {
-      await context.read<FavoriteProvider>().reload();
-    }
-  }
-
-  Future<void> _openFavorites(List<AudioItem> items) async {
-    await showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      elevation: 0,
-      builder: (BuildContext sheetContext) {
-        return ProfileFavoriteSheet(
-          items: items,
-          onOpen: _openPlayer,
-        );
-      },
-    );
   }
 
   Future<void> _openAvatar() async {
@@ -174,11 +139,7 @@ class _ProfileTabState extends State<ProfileTab> {
     final SleepProvider sleep = context.watch<SleepProvider>();
     final FavoriteProvider favorites = context.watch<FavoriteProvider>();
     final DiaryProvider diary = context.watch<DiaryProvider>();
-    final SoundProvider sound = context.watch<SoundProvider>();
     final AvatarProvider avatar = context.watch<AvatarProvider>();
-    final List<AudioItem> favoriteItems = sound.localAudios
-        .where((AudioItem item) => favorites.isFavorite(item.id))
-        .toList(growable: false);
     final int joinedDays = _joinedDays(auth);
 
     return AppBackground(
@@ -216,12 +177,6 @@ class _ProfileTabState extends State<ProfileTab> {
                 favorites: favorites.count,
                 diaries: diary.entries.length,
                 rituals: sleep.sessions.length,
-              ),
-              ProfileFavorites(
-                items: favoriteItems,
-                total: favorites.count,
-                onOpen: _openPlayer,
-                onShowAll: () => _openFavorites(favoriteItems),
               ),
               const SizedBox(height: AppSpacing.xxl),
               ProfileEntries(

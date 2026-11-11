@@ -9,8 +9,8 @@ import '../../providers/player_provider.dart';
 import '../../providers/private_media_provider.dart';
 import '../../providers/sound_provider.dart';
 import '../../widgets/app_background.dart';
+import '../player/video_player_page.dart';
 import '../tabs/widgets/private_import_launcher.dart';
-import '../tabs/widgets/video_preview_sheet.dart';
 import 'all_media_catalog.dart';
 import 'all_media_item.dart';
 import 'widgets/all_media_content.dart';
@@ -117,7 +117,7 @@ class _AllMediaPageState extends State<AllMediaPage> {
         arguments: item.audio,
       );
     } else {
-      await showVideoPreviewSheet(context, item.video!);
+      await openVideoPlayer(context, item.video!);
     }
   }
   Future<void> _delete(

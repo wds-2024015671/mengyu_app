@@ -11,6 +11,7 @@ import '../../providers/private_media_provider.dart';
 import '../../providers/sound_provider.dart';
 import '../../widgets/app_background.dart';
 import '../../widgets/section_header.dart';
+import '../player/video_player_page.dart';
 import '../sound/all_media_page.dart';
 import 'widgets/private_import_launcher.dart';
 import 'widgets/sound_header.dart';
@@ -19,7 +20,6 @@ import 'widgets/sound_list_entry.dart';
 import 'widgets/sound_list_frame.dart';
 import 'widgets/sound_search_field.dart';
 import 'widgets/video_group.dart';
-import 'widgets/video_preview_sheet.dart';
 /// v9 声屿：私人库入口 + 单滚动声音列表 + 视频大框。
 class SoundTab extends StatefulWidget {
   const SoundTab({super.key, this.active = true});
@@ -108,12 +108,12 @@ class _SoundTabState extends State<SoundTab> {
       private: private,
       query: _query,
       hiddenDemoKeys: visibility.hidden,
-    );
+    ).take(6).toList(growable: false);
     final List<VideoEntry> videos = buildVideoEntries(
       private: private,
       query: _query,
       hiddenDemoKeys: visibility.hidden,
-    );
+    ).take(6).toList(growable: false);
     return AppBackground(
       tint: context.c.tintSound,
       child: SafeArea(
@@ -184,7 +184,7 @@ class _SoundTabState extends State<SoundTab> {
                     else
                       VideoGroup(
                         videos: videos,
-                        onOpen: (video) => showVideoPreviewSheet(context, video),
+                        onOpen: (video) => openVideoPlayer(context, video),
                       ),
                   ],
                 ),

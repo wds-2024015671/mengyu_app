@@ -11,7 +11,6 @@ import 'package:mengyu_app/models/audio_item.dart';
 import 'package:mengyu_app/models/diary_entry.dart';
 import 'package:mengyu_app/models/sleep_session.dart';
 import 'package:mengyu_app/pages/tabs/profile_tab.dart';
-import 'package:mengyu_app/pages/tabs/widgets/profile_favorite_sheet.dart';
 import 'package:mengyu_app/providers/auth_provider.dart';
 import 'package:mengyu_app/providers/avatar_provider.dart';
 import 'package:mengyu_app/providers/diary_provider.dart';
@@ -212,24 +211,10 @@ void main() {
     expect(find.text('上传数量'), findsNothing);
     expect(find.text('加入天数'), findsNothing);
 
-    expect(find.text('我的收藏'), findsOneWidget);
-    expect(find.text('全部 3 ›'), findsOneWidget);
-    expect(find.text('雨声'), findsOneWidget);
-    expect(find.text('篝火'), findsOneWidget);
-    expect(find.text('白噪'), findsOneWidget);
-
-    await tester.tap(find.text('雨声'));
-    await tester.pumpAndSettle();
-    expect(find.text('播放器'), findsOneWidget);
-    await tester.pageBack();
-    await tester.pumpAndSettle();
-
-    await tester.tap(find.text('全部 3 ›'));
-    await tester.pumpAndSettle();
-    expect(find.byType(ProfileFavoriteSheet), findsOneWidget);
-    expect(find.text('雨声'), findsWidgets);
-    await tester.tap(find.byTooltip('关闭'));
-    await tester.pumpAndSettle();
+    expect(find.text('我的收藏'), findsNothing);
+    expect(find.text('全部 3 ›'), findsNothing);
+    expect(find.text('还没有收藏'), findsNothing);
+    expect(find.text('雨声'), findsNothing);
 
     await tester.ensureVisible(find.text('设置'));
     await tester.tap(find.text('设置'));

@@ -54,6 +54,7 @@ void main() {
     expect(find.text('全部视频'), findsOneWidget);
     expect(find.text('雨落窗台'), findsOneWidget);
     expect(find.text('篝火噼啪'), findsOneWidget);
+    expect(find.text('风吹草叶'), findsNothing);
     expect(find.byTooltip('收藏'), findsNothing);
     expect(find.text('最近在听'), findsNothing);
 
@@ -121,8 +122,11 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(video);
     await tester.pumpAndSettle();
-    expect(find.text('本地 · 01:00'), findsOneWidget);
-    await tester.tap(find.byTooltip('关闭'));
+    expect(find.text('视频 · 深度助眠'), findsOneWidget);
+    expect(find.text('00:00 · 剩余 00:00'), findsOneWidget);
+    expect(find.text('本地'), findsNothing);
+    expect(find.byType(Slider), findsNothing);
+    await tester.tap(find.byTooltip('返回'));
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
   });

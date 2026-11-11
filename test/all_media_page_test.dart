@@ -154,6 +154,7 @@ void main() {
     expect(find.text('共 8 个'), findsOneWidget);
     expect(find.text('轻触发音'), findsOneWidget);
     expect(find.text('海浪'), findsOneWidget);
+    expect(find.text('风吹草叶'), findsOneWidget);
     expect(find.text('本地'), findsNothing);
     expect(find.text('Bilibili'), findsNothing);
     expect(find.text('今晚'), findsNothing);
