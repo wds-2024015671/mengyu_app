@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mengyu_app/app.dart';
 import 'package:mengyu_app/data/repositories/local/local_favorite_repository.dart';
-import 'package:mengyu_app/pages/tabs/widgets/sound_card.dart';
+import 'package:mengyu_app/pages/tabs/widgets/sound_list_frame.dart';
+import 'package:mengyu_app/pages/tabs/widgets/sound_segment_switch.dart';
+import 'package:mengyu_app/pages/tabs/widgets/video_group.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'support/fake_audio_engine.dart';
@@ -31,7 +33,7 @@ void main() {
     expect(await repository.load(), <String>{'local_rain', 'local_noise'});
   });
 
-  testWidgets('声屿：6 条 / 搜索 / 收藏 / 三段分类 / 播放入口', (
+  testWidgets('声屿 v9：声音列表 / 视频大框 / 搜索 / 分类', (
     WidgetTester tester,
   ) async {
     _usePhoneSize(tester);
@@ -45,97 +47,110 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('把世界调成静音'), findsOneWidget);
+    expect(find.text('私人库'), findsOneWidget);
     expect(find.text('全部声音 · 6'), findsOneWidget);
-    expect(find.byType(SoundCard), findsNWidgets(6));
-    expect(find.text('公共库'), findsNothing);
-    expect(find.text('我的上传'), findsNothing);
-    expect(find.text('上传'), findsNothing);
+    expect(find.byType(SoundListFrame), findsOneWidget);
+    expect(find.byType(VideoGroup), findsOneWidget);
+    expect(find.text('全部视频'), findsOneWidget);
+    expect(find.text('雨落窗台'), findsOneWidget);
+    expect(find.text('篝火噼啪'), findsOneWidget);
+    expect(find.byTooltip('收藏'), findsNothing);
+    expect(find.text('最近在听'), findsNothing);
 
-    // 搜索：300ms 防抖后只剩雨声
     final Finder search = find.byType(TextField);
     await tester.enterText(search, '雨');
     await tester.pump(const Duration(milliseconds: 350));
     await tester.pumpAndSettle();
     expect(find.text('全部声音 · 1'), findsOneWidget);
-    expect(find.widgetWithText(SoundCard, '雨声'), findsOneWidget);
-    expect(find.widgetWithText(SoundCard, '海浪'), findsNothing);
+    expect(find.text('雨落窗台'), findsOneWidget);
+    expect(find.text('篝火噼啪'), findsNothing);
 
     await tester.enterText(search, '');
     await tester.pump(const Duration(milliseconds: 350));
     await tester.pumpAndSettle();
     expect(find.text('全部声音 · 6'), findsOneWidget);
 
-    // 收藏：卡片心变实心并写 prefs
-    final Finder rainCard = find.widgetWithText(SoundCard, '雨声');
     await tester.tap(
-      find.descendant(of: rainCard, matching: find.byTooltip('收藏')),
+      find.descendant(
+        of: find.byType(SoundSegmentSwitch),
+        matching: find.text('Nature'),
+      ),
     );
     await tester.pumpAndSettle();
-    expect(find.byTooltip('取消收藏'), findsOneWidget);
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    expect(find.text('全部声音 · 2'), findsOneWidget);
+    expect(find.text('海浪白噪'), findsOneWidget);
     expect(
-      prefs.getStringList(LocalFavoriteRepository.prefsKey),
-      contains('local_rain'),
+      find.descendant(
+        of: find.byType(SoundListFrame),
+        matching: find.text('夏夜虫鸣'),
+      ),
+      findsOneWidget,
     );
+    expect(find.text('雨落窗台'), findsNothing);
 
-    // 顶部心形：仅看收藏
-    await tester.tap(find.byTooltip('仅看收藏'));
+    await tester.tap(
+      find.descendant(
+        of: find.byType(SoundSegmentSwitch),
+        matching: find.text('Other'),
+      ),
+    );
     await tester.pumpAndSettle();
-    expect(find.text('全部声音 · 1'), findsOneWidget);
-    expect(find.widgetWithText(SoundCard, '雨声'), findsOneWidget);
-    expect(find.widgetWithText(SoundCard, '海浪'), findsNothing);
-    await tester.tap(find.byTooltip('仅看收藏'));
-    await tester.pumpAndSettle();
-    expect(find.byType(SoundCard), findsNWidgets(6));
+    expect(find.text('全部声音 · 0'), findsOneWidget);
+    expect(find.text('没有找到相关声音'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
 
-    // 三段分类
-    await tester.tap(find.text('Nature'));
+  testWidgets('声屿 393×852：单滚动无溢出', (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(393, 852);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    await tester.pumpWidget(
+      MengYuApp(audioEngineFactory: () => FakeAudioEngine()),
+    );
+    await tester.pump(const Duration(milliseconds: 2600));
     await tester.pumpAndSettle();
-    expect(find.text('Nature · 3'), findsOneWidget);
-    expect(find.widgetWithText(SoundCard, '海浪'), findsOneWidget);
-    expect(find.widgetWithText(SoundCard, '溪流'), findsOneWidget);
-    expect(find.widgetWithText(SoundCard, '夜风'), findsOneWidget);
-    expect(find.widgetWithText(SoundCard, '雨声'), findsNothing);
-    expect(find.widgetWithText(SoundCard, '篝火'), findsNothing);
-
-    await tester.tap(find.text('Other'));
-    await tester.pumpAndSettle();
-    expect(find.text('Other · 1'), findsOneWidget);
-    expect(find.widgetWithText(SoundCard, '白噪'), findsOneWidget);
-    expect(find.widgetWithText(SoundCard, '海浪'), findsNothing);
-
-    await tester.tap(find.text('ASMR'));
+    await tester.tap(find.widgetWithText(InkWell, '声屿'));
     await tester.pumpAndSettle();
     expect(find.text('全部声音 · 6'), findsOneWidget);
-
-    // 卡片点击进播放器
-    await tester.tap(find.widgetWithText(SoundCard, '雨声'));
+    await tester.drag(find.byType(ListView), const Offset(0, -2600));
     await tester.pumpAndSettle();
-    expect(find.text('正在播放'), findsOneWidget);
-    await tester.tap(find.byTooltip('返回'));
-    await tester.pumpAndSettle();
-    if (find.text('要开始记录睡眠吗？').evaluate().isNotEmpty) {
-      await tester.tap(find.text('不用了'));
-      await tester.pumpAndSettle();
-    }
+    expect(find.byType(VideoGroup), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
 
-    // 三段 + 搜索 + 收藏叠加：Nature 里只收藏海浪，再搜“海”
-    final Finder oceanCard = find.widgetWithText(SoundCard, '海浪');
-    await tester.tap(
-      find.descendant(of: oceanCard, matching: find.byTooltip('收藏')),
+  testWidgets('声屿：私人库弹层 / 无效链接 / 视频点击', (
+    WidgetTester tester,
+  ) async {
+    _usePhoneSize(tester);
+    await tester.pumpWidget(
+      MengYuApp(audioEngineFactory: () => FakeAudioEngine()),
     );
+    await tester.pump(const Duration(milliseconds: 2600));
     await tester.pumpAndSettle();
-    await tester.tap(find.byTooltip('仅看收藏'));
+    await tester.tap(find.widgetWithText(InkWell, '声屿'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Nature'));
-    await tester.pumpAndSettle();
-    await tester.enterText(find.byType(TextField), '海');
-    await tester.pump(const Duration(milliseconds: 350));
-    await tester.pumpAndSettle();
-    expect(find.text('Nature · 1'), findsOneWidget);
-    expect(find.widgetWithText(SoundCard, '海浪'), findsOneWidget);
-    expect(find.widgetWithText(SoundCard, '雨声'), findsNothing);
 
+    await tester.tap(find.text('私人库'));
+    await tester.pumpAndSettle();
+    expect(find.text('添加到私人库'), findsOneWidget);
+    expect(find.text('仅音频'), findsOneWidget);
+    expect(find.text('视频'), findsOneWidget);
+    await tester.tap(find.text('解析并下载'));
+    await tester.pumpAndSettle();
+    expect(find.text('请输入有效的 http(s) 链接'), findsOneWidget);
+    await tester.tap(find.byTooltip('关闭'));
+    await tester.pumpAndSettle();
+
+    final Finder video = find.text('轻触发音');
+    final BuildContext videoContext = tester.element(video);
+    await Scrollable.ensureVisible(videoContext, alignment: 0.35);
+    await tester.pumpAndSettle();
+    await tester.tap(video);
+    await tester.pumpAndSettle();
+    expect(find.text('本地 · 01:00'), findsOneWidget);
+    await tester.tap(find.byTooltip('关闭'));
+    await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
   });
 }

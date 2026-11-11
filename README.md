@@ -3,7 +3,7 @@
 睡眠与声音疗愈 App 的前端工程（F01–F13 已完成并审查）。当前包含：全部功能页 + 欢迎/登录、
 14 条命名路由、浅/深双主题与公共组件、本地数据层（sqlite v3 / 自动睡眠记录状态机 /
 DAO / Repository Local 实现 / 10 个 Provider）、欢迎/登录/游客、MainShell 登录守卫、
-正式版首页、声屿三分区与本地收藏、上传页、播放器与定时、呼吸两页、日记列表/编辑、
+正式版首页、声屿私人库/声音列表/视频大框、上传页、播放器与定时、呼吸两页、日记列表/编辑、
 睡眠补记与晨间确认、月迹周统计/月相/最近记录、头像上传、我的页与设置弹窗。
 网络请求仍留到后端阶段。
 
@@ -74,11 +74,11 @@ lib/
 ## F01–F13 验收状态
 
 - `flutter analyze`：0 issue
-- `flutter test`：116 个测试全部通过
+- `flutter test`：121 个测试全部通过
 - 360×800：`test/routes_smoke_test.dart` 逐条打开 14 条路由，无 RenderFlex 溢出
 - 360×800：`test/components_test.dart` 组合渲染 8 个公共组件，无 RenderFlex 溢出
 - 360×800：`test/home_test.dart` 首页推荐卡 → 播放器、月迹切 tab、下拉刷新、未登录重定向
-- 360×800：`test/sound_test.dart` 声屿两列网格、搜索、收藏落盘、公共库空态、上传入口
+- 360×800：`test/sound_test.dart` 声屿声音列表、视频大框、搜索、分类、私人库弹层
 - 360×800：`test/upload_page_test.dart` 选文件、20MB 拦截、表单校验、成功 pop(true)、失败 SnackBar、未登录跳转
 - 360×800：`test/player_page_test.dart` 自动播放、暂停、收藏、定时、错误重试
 - `/` → `/login` → `/home` 可跳；4 tab 可切；`/upload` 可从「我的 → 我的上传」打开
@@ -89,7 +89,7 @@ lib/
   游客进入；失败 SnackBar；记住我关闭后重启回登录页；已登录冷启动直接进首页
 - F05：MainShell 首帧登录守卫；首页按时段问候、月亮插画 + Stack 星点、连续 0 天显示“从今晚开始”、
   预推送 `SoundProvider` 第一条进播放器、呼吸/日记命名路由 + 月迹切 tab、仪式三步、下拉刷新
-- F06：三分区 IndexedStack；本地 6 条两列 + 搜索/分类/仅看收藏；收藏写 prefs；
+- F06：声屿私人库入口；一个外框 6 行声音；一个大框 2 列视频；搜索/分类/更多；本地演示视频；
   公共库空态“公共库将在后端接入后开放”且保留搜索/分页/错误结构；
   我的上传待审/上架/驳回+原因；右上角上传；播放器返回刷新收藏
 - F07：file_picker 选音频、20MB 拦截、标题/分类/简介/版权校验、提交 loading、
@@ -242,7 +242,7 @@ lib/
 - 7 个 Repository 接口（Auth/Sound/Upload/Diary/Session/Favorite/Settings）都保留；
   页面没有直接 import `sqflite` / `dio` / `shared_preferences` / `path_provider`。
   `UploadPage` 只 import `audio_file_picker` 这个可注入的服务，属于 F07 的刻意设计。
-- 全量 `flutter analyze` 0 issue；116 个测试通过；360×800 路由/组件/播放器/呼吸/日记/月迹/我的均有覆盖。
+- 全量 `flutter analyze` 0 issue；121 个测试通过；360×800 路由/组件/播放器/呼吸/日记/月迹/我的均有覆盖。
 - 数据页均有 loading / error / empty：声屿三分区、日记、月迹；播放器有 loading/error/retry。
 - Controller/Timer/AudioPlayer/StreamSubscription 均有 dispose 路径；await 后检查 mounted。
 - lib 下无超过 250 行的文件；除 `core/theme` 外没有 `Color(0x...)` 或 `fontSize:` 新字面量。

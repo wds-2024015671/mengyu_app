@@ -10,8 +10,9 @@ class AppDatabase {
 
   static final AppDatabase instance = AppDatabase._();
 
-  /// v1：日记 + 睡眠记录；v2：下载/上传与索引；v3：自动记录状态机。
-  static const int version = 3;
+  /// v1：日记 + 睡眠记录；v2：下载/上传与索引；v3：自动记录状态机；
+  /// v4：私人库媒体表。
+  static const int version = 4;
   static const String fileName = 'mengyu.db';
 
   Database? _database;
@@ -63,6 +64,7 @@ class AppDatabase {
     await _createV1(db);
     await _createV2(db);
     await _createV3(db);
+    await _createV4(db);
   }
 
   static Future<void> _onUpgrade(
@@ -75,6 +77,9 @@ class AppDatabase {
     }
     if (oldVersion < 3) {
       await _createV3(db);
+    }
+    if (oldVersion < 4) {
+      await _createV4(db);
     }
   }
 
@@ -207,6 +212,34 @@ class AppDatabase {
     await db.execute(
       'CREATE INDEX IF NOT EXISTS idx_tracking_status '
       'ON sleep_tracking(status, start_at DESC)',
+    );
+  }
+
+  /// v4：声屿私人库；只存本地已下载媒体。
+  static Future<void> _createV4(Database db) async {
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS private_media (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        type TEXT NOT NULL,
+        title TEXT NOT NULL,
+        source_url TEXT NOT NULL,
+        local_path TEXT NOT NULL,
+        duration_ms INTEGER NOT NULL DEFAULT 0,
+        platform TEXT NOT NULL DEFAULT '本地',
+        file_size INTEGER NOT NULL DEFAULT 0,
+        status TEXT NOT NULL DEFAULT 'downloading',
+        created_at TEXT NOT NULL,
+        thumb_url TEXT,
+        thumb_path TEXT
+      )
+    ''');
+    await db.execute(
+      'CREATE INDEX IF NOT EXISTS idx_private_media_type '
+      'ON private_media(type)',
+    );
+    await db.execute(
+      'CREATE INDEX IF NOT EXISTS idx_private_media_created '
+      'ON private_media(created_at DESC)',
     );
   }
 }

@@ -5,12 +5,14 @@ import '../core/audio/audio_engine.dart';
 import '../core/audio/audioplayers_engine.dart';
 import '../core/constants/app_settings.dart';
 import '../data/dao/diary_dao.dart';
+import '../data/dao/private_media_dao.dart';
 import '../data/dao/session_dao.dart';
 import '../data/dao/sleep_tracking_dao.dart';
 import '../data/db/app_database.dart';
 import '../data/repositories/local/local_auth_repository.dart';
 import '../data/repositories/local/local_diary_repository.dart';
 import '../data/repositories/local/local_favorite_repository.dart';
+import '../data/repositories/local/local_private_media_repository.dart';
 import '../data/repositories/local/local_session_repository.dart';
 import '../data/repositories/local/local_settings_repository.dart';
 import '../data/repositories/local/local_sleep_tracking_repository.dart';
@@ -25,6 +27,7 @@ import 'avatar_provider.dart';
 import 'diary_provider.dart';
 import 'favorite_provider.dart';
 import 'player_provider.dart';
+import 'private_media_provider.dart';
 import 'settings_provider.dart';
 import 'sleep_provider.dart';
 import 'sleep_tracking_provider.dart';
@@ -73,6 +76,11 @@ List<SingleChildWidget> buildAppProviders({
     ),
     ChangeNotifierProvider<SoundProvider>(
       create: (_) => SoundProvider(const LocalSoundRepository()),
+    ),
+    ChangeNotifierProvider<PrivateMediaProvider>(
+      create: (_) => PrivateMediaProvider(
+        LocalPrivateMediaRepository(PrivateMediaDao(database)),
+      ),
     ),
     ChangeNotifierProvider<FavoriteProvider>(
       create: (_) => FavoriteProvider(const LocalFavoriteRepository()),

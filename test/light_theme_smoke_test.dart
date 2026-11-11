@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mengyu_app/app.dart';
 import 'package:mengyu_app/core/theme/app_tokens.dart';
-import 'package:mengyu_app/pages/tabs/widgets/sound_card.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'support/fake_audio_engine.dart';
@@ -51,7 +50,7 @@ void main() {
     // 浅色播放器
     await tester.tap(find.widgetWithText(InkWell, '声屿'));
     await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(SoundCard, '雨声'));
+    await tester.tap(find.text('雨落窗台'));
     await tester.pumpAndSettle();
     expect(find.text('正在播放'), findsOneWidget);
     await tester.tap(find.byTooltip('返回'));
