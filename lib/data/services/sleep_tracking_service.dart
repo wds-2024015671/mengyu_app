@@ -44,9 +44,7 @@ class SleepTrackingService {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     final int value =
         prefs.getInt(kReminderMinutesKey) ?? kDefaultReminderMinutes;
-    return kReminderOptions.contains(value)
-        ? value
-        : kDefaultReminderMinutes;
+    return value >= 0 && value < 24 * 60 ? value : kDefaultReminderMinutes;
   }
   Future<bool> requestNotificationPermission() =>
       _notifications.requestPermission();

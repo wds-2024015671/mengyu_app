@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../../../core/constants/app_settings.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../providers/settings_provider.dart';
+import '../../../widgets/custom_minutes_dialog.dart';
 import 'settings_controls.dart';
 import 'settings_sleep_section.dart';
 
@@ -42,6 +43,19 @@ class SettingsSheet extends StatelessWidget {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(settings.error ?? '默认定时保存失败')),
       );
+    }
+  }
+
+  Future<void> _pickCustomTimer(
+    BuildContext context,
+    SettingsProvider settings,
+  ) async {
+    final int? minutes = await showCustomMinutesDialog(
+      context,
+      initialMinutes: settings.defaultTimerMinutes,
+    );
+    if (minutes != null && context.mounted) {
+      await _pickTimer(context, settings, minutes);
     }
   }
 
@@ -139,8 +153,23 @@ class SettingsSheet extends StatelessWidget {
                       selected: settings.defaultTimerMinutes == minutes,
                       onTap: () => _pickTimer(context, settings, minutes),
                     ),
+                  SettingsChoiceButton(
+                    label: '自定义',
+                    selected: !kTimerOptions.contains(
+                      settings.defaultTimerMinutes,
+                    ),
+                    onTap: () => _pickCustomTimer(context, settings),
+                  ),
                 ],
               ),
+              if (!kTimerOptions.contains(settings.defaultTimerMinutes))
+                Padding(
+                  padding: const EdgeInsets.only(top: AppSpacing.xs),
+                  child: Text(
+                    '当前自定义：${settings.defaultTimerMinutes} 分钟',
+                    style: context.s.captionMuted,
+                  ),
+                ),
               const SizedBox(height: AppSpacing.xxl),
               const SettingsSleepSection(),
               const SizedBox(height: AppSpacing.xxl),

@@ -98,6 +98,27 @@ class SettingsSleepSection extends StatelessWidget {
     }
   }
 
+  Future<void> _pickReminder(
+    BuildContext context,
+    SettingsProvider settings,
+    SleepTrackingProvider tracking,
+  ) async {
+    final int current = settings.reminderMinutes;
+    final TimeOfDay? picked = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay(hour: current ~/ 60, minute: current % 60),
+      helpText: '晨间提醒时间',
+    );
+    if (!context.mounted || picked == null) {
+      return;
+    }
+    final int minutes = picked.hour * 60 + picked.minute;
+    await settings.setReminderMinutes(minutes);
+    if (context.mounted) {
+      await tracking.rescheduleReminder();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final SettingsProvider settings = context.watch<SettingsProvider>();
@@ -135,34 +156,38 @@ class SettingsSleepSection extends StatelessWidget {
           const SizedBox(height: AppSpacing.sm),
           Text('提醒时间', style: context.s.caption),
           const SizedBox(height: AppSpacing.xs),
-          Wrap(
-            spacing: AppSpacing.sm,
-            children: <Widget>[
-              for (final int minutes in kReminderOptions)
-                ChoiceChip(
-                  label: Text(_clock(minutes)),
-                  selected: settings.reminderMinutes == minutes,
-                  onSelected: (_) async {
-                    await settings.setReminderMinutes(minutes);
-                    if (context.mounted) {
-                      await context
-                          .read<SleepTrackingProvider>()
-                          .rescheduleReminder();
-                    }
-                  },
-                  labelStyle: context.s.caption,
-                  selectedColor: context.c.secondary.withOpacity(0.12),
-                  backgroundColor: Colors.transparent,
-                  side: BorderSide(
-                    color: settings.reminderMinutes == minutes
-                        ? context.c.secondary
-                        : context.c.stroke,
+          Text('每天这个时间提醒确认', style: context.s.captionMuted),
+          const SizedBox(height: AppSpacing.xs),
+          InkWell(
+            onTap: () => _pickReminder(context, settings, tracking),
+            borderRadius: BorderRadius.circular(AppRadius.control),
+            child: Container(
+              height: 44,
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.md,
+              ),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(AppRadius.control),
+                border: Border.all(color: context.c.stroke),
+              ),
+              child: Row(
+                children: <Widget>[
+                  Text(
+                    _clock(settings.reminderMinutes),
+                    style: context.s.body.copyWith(
+                      color: context.c.secondary,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(AppRadius.chip),
+                  const Spacer(),
+                  Icon(
+                    Icons.edit_outlined,
+                    size: 16,
+                    color: context.c.textTertiary,
                   ),
-                ),
-            ],
+                ],
+              ),
+            ),
           ),
         ],
         const SizedBox(height: AppSpacing.sm),

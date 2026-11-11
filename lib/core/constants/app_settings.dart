@@ -38,9 +38,14 @@ enum AppThemeMode {
   }
 }
 
-/// 默认定时与设置弹窗共用同一组选项。
-const List<int> kTimerOptions = <int>[15, 30, 45, 60, 90];
+/// 默认定时与定时页共用同一组快捷选项；自定义范围 1–180 分钟。
+const List<int> kTimerOptions = <int>[5, 10, 15, 20];
+const int kMinTimerMinutes = 1;
+const int kMaxTimerMinutes = 180;
+
+bool isValidTimerMinutes(int minutes) =>
+    minutes >= kMinTimerMinutes && minutes <= kMaxTimerMinutes;
 
 /// 设置 prefs 的默认值。
 const AppThemeMode kDefaultThemeMode = AppThemeMode.dark;
-const int kDefaultTimerMinutes = 30;
+const int kDefaultTimerMinutes = 10;

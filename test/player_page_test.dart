@@ -113,13 +113,13 @@ void main() {
     await tester.tap(find.byTooltip('定时'));
     await tester.pumpAndSettle();
     expect(find.text('定时关闭'), findsOneWidget);
-    await tester.tap(find.text('30 分'));
+    await tester.tap(find.text('10 分'));
     await tester.pump();
     await tester.tap(find.widgetWithText(PrimaryButton, '开始计时'));
     await tester.pumpAndSettle();
 
-    expect(harness.player.remaining?.inMinutes, 30);
-    expect(find.text('定时 30:00 · 到点自动停'), findsOneWidget);
+    expect(harness.player.remaining?.inMinutes, 10);
+    expect(find.text('定时 10:00 · 到点自动停'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
@@ -147,7 +147,8 @@ void main() {
 
     expect(find.text('定时关闭'), findsOneWidget);
     expect(find.text('45'), findsOneWidget);
-    expect(find.text('45 分'), findsOneWidget);
+    expect(find.text('自定义'), findsOneWidget);
+    expect(find.text('45 分'), findsNothing);
     expect(tester.takeException(), isNull);
   });
 

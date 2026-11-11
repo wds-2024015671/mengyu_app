@@ -1,15 +1,17 @@
 import 'package:mengyu_app/core/theme/app_tokens.dart';
 import 'package:flutter/material.dart';
 
+import '../../core/constants/app_settings.dart';
 import '../../core/theme/app_theme.dart';
 import '../../widgets/app_background.dart';
+import '../../widgets/custom_minutes_dialog.dart';
 import '../../widgets/primary_button.dart';
 
-/// 定时关闭：15/30/45/60/90 分钟，点“开始计时”把分钟数 pop 回播放页。
+/// 定时关闭：5/10/15/20 分钟快捷项 + 自定义 1–180 分钟。
 class TimerPage extends StatefulWidget {
   const TimerPage({super.key, this.initialMinutes});
 
-  /// 播放器当前剩余的分钟数；不在选项里时默认 30。
+  /// 播放器当前剩余的分钟数；非法时回退到默认 10 分钟。
   final int? initialMinutes;
 
   @override
@@ -17,15 +19,25 @@ class TimerPage extends StatefulWidget {
 }
 
 class _TimerPageState extends State<TimerPage> {
-  static const List<int> _options = <int>[15, 30, 45, 60, 90];
-
   late int _minutes;
 
   @override
   void initState() {
     super.initState();
     final int? initial = widget.initialMinutes;
-    _minutes = initial != null && _options.contains(initial) ? initial : 30;
+    _minutes = initial != null && isValidTimerMinutes(initial)
+        ? initial
+        : kDefaultTimerMinutes;
+  }
+
+  Future<void> _pickCustom() async {
+    final int? value = await showCustomMinutesDialog(
+      context,
+      initialMinutes: _minutes,
+    );
+    if (mounted && value != null) {
+      setState(() => _minutes = value);
+    }
   }
 
   @override
@@ -56,9 +68,9 @@ class _TimerPageState extends State<TimerPage> {
                 _TimerDial(minutes: _minutes),
                 const SizedBox(height: AppSpacing.xxl),
                 _TimerOptions(
-                  options: _options,
                   selected: _minutes,
                   onSelect: (int value) => setState(() => _minutes = value),
+                  onCustom: _pickCustom,
                 ),
                 const SizedBox(height: AppSpacing.xxl),
                 PrimaryButton(
@@ -98,7 +110,7 @@ class _TimerDial extends StatelessWidget {
               width: 200,
               height: 200,
               child: CircularProgressIndicator(
-                value: minutes / 90,
+                value: (minutes / kMaxTimerMinutes).clamp(0.0, 1.0),
                 strokeWidth: 3,
                 color: context.c.secondary,
                 backgroundColor: context.c.stroke,
@@ -130,29 +142,38 @@ class _TimerDial extends StatelessWidget {
 
 class _TimerOptions extends StatelessWidget {
   const _TimerOptions({
-    required this.options,
     required this.selected,
     required this.onSelect,
+    required this.onCustom,
   });
 
-  final List<int> options;
   final int selected;
   final ValueChanged<int> onSelect;
+  final VoidCallback onCustom;
 
   @override
   Widget build(BuildContext context) {
+    final bool custom = !kTimerOptions.contains(selected);
     return Row(
       children: <Widget>[
-        for (int i = 0; i < options.length; i++) ...<Widget>[
+        for (int i = 0; i < kTimerOptions.length; i++) ...<Widget>[
           if (i > 0) const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: _TimerOption(
-              minutes: options[i],
-              selected: options[i] == selected,
-              onTap: () => onSelect(options[i]),
+              label: '${kTimerOptions[i]} 分',
+              selected: kTimerOptions[i] == selected,
+              onTap: () => onSelect(kTimerOptions[i]),
             ),
           ),
         ],
+        const SizedBox(width: AppSpacing.sm),
+        Expanded(
+          child: _TimerOption(
+            label: '自定义',
+            selected: custom,
+            onTap: onCustom,
+          ),
+        ),
       ],
     );
   }
@@ -160,12 +181,12 @@ class _TimerOptions extends StatelessWidget {
 
 class _TimerOption extends StatelessWidget {
   const _TimerOption({
-    required this.minutes,
+    required this.label,
     required this.selected,
     required this.onTap,
   });
 
-  final int minutes;
+  final String label;
   final bool selected;
   final VoidCallback onTap;
 
@@ -188,7 +209,7 @@ class _TimerOption extends StatelessWidget {
             border: selected ? null : Border.all(color: context.c.stroke),
           ),
           child: Text(
-            '$minutes 分',
+            label,
             textAlign: TextAlign.center,
             style: context.s.body.copyWith(
               color: selected ? context.c.secondary : context.c.textSecondary,

@@ -87,8 +87,7 @@ class SettingsProvider extends ChangeNotifier {
   }
 
   Future<bool> setDefaultTimerMinutes(int minutes) async {
-    if (!kTimerOptions.contains(minutes) ||
-        _defaultTimerMinutes == minutes) {
+    if (!isValidTimerMinutes(minutes) || _defaultTimerMinutes == minutes) {
       return true;
     }
     final int previous = _defaultTimerMinutes;
@@ -145,7 +144,7 @@ class SettingsProvider extends ChangeNotifier {
   }
 
   Future<bool> setReminderMinutes(int minutes) async {
-    if (!kReminderOptions.contains(minutes) || _reminderMinutes == minutes) {
+    if (minutes < 0 || minutes >= 24 * 60 || _reminderMinutes == minutes) {
       return true;
     }
     final int previous = _reminderMinutes;

@@ -74,7 +74,7 @@ lib/
 ## F01–F13 验收状态
 
 - `flutter analyze`：0 issue
-- `flutter test`：114 个测试全部通过
+- `flutter test`：115 个测试全部通过
 - 360×800：`test/routes_smoke_test.dart` 逐条打开 14 条路由，无 RenderFlex 溢出
 - 360×800：`test/components_test.dart` 组合渲染 8 个公共组件，无 RenderFlex 溢出
 - 360×800：`test/home_test.dart` 首页推荐卡 → 播放器、月迹切 tab、下拉刷新、未登录重定向
@@ -160,7 +160,7 @@ lib/
   “公共音频需要后端接入后才能播放”，不发网络请求；release mode 固定 `loop`。
 - 播放页：全屏夜空渐变 + Hero 封面（tag 与声屿 `SoundCard` 共用 `audio_cover_tag`）、
   进度/seek、暂停/继续、音量、收藏、定时；退出页面暂停并取消定时。
-- 定时：15/30/45/60/90 分钟，到 0 秒时暂停 + 写 `sleep_sessions` + SnackBar；
+- 定时：5/10/15/20 分钟快捷项 + 自定义 1–180 分钟，到 0 秒时暂停 + 写 `sleep_sessions` + SnackBar；
   Provider dispose / 退出播放页都会取消 Timer。
 - 声音仪式：首次播放记 startedAt；暂停/离开满 1 分钟 upsert 同一条记录（bed=开始、wake=当前、
   quality=3、note=“声音仪式：曲名”），同一首多次暂停不会写出碎片记录。
@@ -222,7 +222,7 @@ lib/
   UploadProvider.uploads.length。
 - 入口：我的上传 → `/upload`；设置 → `showModalBottomSheet`；关于 → 对话框；退出登录 → 二次确认。
   没有 `/settings` 路由，`AppRoutes.all` 仍是 14 条。
-- 设置弹窗：`SettingsSheet` 提供深色/浅色/跟随系统、15–90 默认定时、清除数据、关于。
+- 设置弹窗：`SettingsSheet` 提供深色/浅色/跟随系统、5/10/15/20 + 自定义默认定时、清除数据、关于。
   主题写 `settings.theme_mode`，定时写 `settings.default_timer_minutes`；
   `_AppView` watch `SettingsProvider`，切换后 `MaterialApp.themeMode` 立即重建。
 - 默认定时：播放页打开定时页时，如果没有正在运行的倒计时的分钟数，就从
@@ -242,7 +242,7 @@ lib/
 - 7 个 Repository 接口（Auth/Sound/Upload/Diary/Session/Favorite/Settings）都保留；
   页面没有直接 import `sqflite` / `dio` / `shared_preferences` / `path_provider`。
   `UploadPage` 只 import `audio_file_picker` 这个可注入的服务，属于 F07 的刻意设计。
-- 全量 `flutter analyze` 0 issue；114 个测试通过；360×800 路由/组件/播放器/呼吸/日记/月迹/我的均有覆盖。
+- 全量 `flutter analyze` 0 issue；115 个测试通过；360×800 路由/组件/播放器/呼吸/日记/月迹/我的均有覆盖。
 - 数据页均有 loading / error / empty：声屿三分区、日记、月迹；播放器有 loading/error/retry。
 - Controller/Timer/AudioPlayer/StreamSubscription 均有 dispose 路径；await 后检查 mounted。
 - lib 下无超过 250 行的文件；除 `core/theme` 外没有 `Color(0x...)` 或 `fontSize:` 新字面量。

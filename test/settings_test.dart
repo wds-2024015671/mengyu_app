@@ -25,7 +25,7 @@ void main() {
 
     await provider.load();
     expect(provider.themeModeSetting, AppThemeMode.dark);
-    expect(provider.defaultTimerMinutes, 30);
+    expect(provider.defaultTimerMinutes, 10);
     expect(provider.autoSleepTracking, isTrue);
     expect(provider.morningReminder, isTrue);
     expect(provider.reminderMinutes, 450);
@@ -34,13 +34,13 @@ void main() {
     expect(await provider.setDefaultTimerMinutes(45), isTrue);
     expect(await provider.setAutoSleepTracking(false), isTrue);
     expect(await provider.setMorningReminder(false), isTrue);
-    expect(await provider.setReminderMinutes(480), isTrue);
+    expect(await provider.setReminderMinutes(390), isTrue);
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     expect(prefs.getString(LocalSettingsRepository.themeKey), 'light');
     expect(prefs.getInt(LocalSettingsRepository.defaultTimerKey), 45);
     expect(prefs.getBool(kAutoSleepTrackingKey), isFalse);
     expect(prefs.getBool(kMorningReminderKey), isFalse);
-    expect(prefs.getInt(kReminderMinutesKey), 480);
+    expect(prefs.getInt(kReminderMinutesKey), 390);
 
     final SettingsProvider reloaded = SettingsProvider(
       repository,
@@ -52,11 +52,11 @@ void main() {
     expect(reloaded.defaultTimerMinutes, 45);
     expect(reloaded.autoSleepTracking, isFalse);
     expect(reloaded.morningReminder, isFalse);
-    expect(reloaded.reminderMinutes, 480);
+    expect(reloaded.reminderMinutes, 390);
     expect(reloaded.themeMode, ThemeMode.light);
 
     // 非法时长不覆盖已有值
-    expect(await provider.setDefaultTimerMinutes(20), isTrue);
+    expect(await provider.setDefaultTimerMinutes(0), isTrue);
     expect(provider.defaultTimerMinutes, 45);
   });
 
@@ -74,7 +74,7 @@ void main() {
     expect(await provider.clearAllData(), isTrue);
     expect(cleaner.cleared, isTrue);
     expect(provider.themeModeSetting, AppThemeMode.dark);
-    expect(provider.defaultTimerMinutes, 30);
+    expect(provider.defaultTimerMinutes, 10);
     expect(provider.isClearing, isFalse);
   });
 

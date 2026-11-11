@@ -64,7 +64,7 @@ void main() {
     );
 
     await open(AppRoutes.timer, arguments: 30, expectFinder: find.text('30'));
-    await open(AppRoutes.timer, expectFinder: find.text('30'));
+    await open(AppRoutes.timer, expectFinder: find.text('10'));
 
     await open(AppRoutes.breathing, expectFinder: find.text('4-7-8 呼吸'));
     // /breathing_session 有持续动画，不能 pumpAndSettle；由 breathing_session_test 单独覆盖。

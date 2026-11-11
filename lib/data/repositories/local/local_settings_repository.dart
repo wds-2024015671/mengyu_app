@@ -28,9 +28,7 @@ class LocalSettingsRepository implements SettingsRepository {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     final int value =
         prefs.getInt(kReminderMinutesKey) ?? kDefaultReminderMinutes;
-    return kReminderOptions.contains(value)
-        ? value
-        : kDefaultReminderMinutes;
+    return value >= 0 && value < 24 * 60 ? value : kDefaultReminderMinutes;
   }
 
   @override
@@ -47,7 +45,7 @@ class LocalSettingsRepository implements SettingsRepository {
 
   @override
   Future<void> writeReminderMinutes(int minutes) async {
-    if (!kReminderOptions.contains(minutes)) {
+    if (minutes < 0 || minutes >= 24 * 60) {
       return;
     }
     final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -64,7 +62,7 @@ class LocalSettingsRepository implements SettingsRepository {
   Future<int> readDefaultTimerMinutes() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     final int value = prefs.getInt(defaultTimerKey) ?? kDefaultTimerMinutes;
-    return kTimerOptions.contains(value) ? value : kDefaultTimerMinutes;
+    return isValidTimerMinutes(value) ? value : kDefaultTimerMinutes;
   }
 
   @override
@@ -75,7 +73,7 @@ class LocalSettingsRepository implements SettingsRepository {
 
   @override
   Future<void> writeDefaultTimerMinutes(int minutes) async {
-    if (!kTimerOptions.contains(minutes)) {
+    if (!isValidTimerMinutes(minutes)) {
       return;
     }
     final SharedPreferences prefs = await SharedPreferences.getInstance();

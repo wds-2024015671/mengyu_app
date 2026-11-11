@@ -243,10 +243,22 @@ void main() {
     await tester.tap(find.text('开启提醒'));
     await tester.pumpAndSettle();
     expect(harness.tracking.hasPermission, isTrue);
+
+    await tester.ensureVisible(find.text('07:30'));
+    await tester.tap(find.text('07:30'));
+    await tester.pumpAndSettle();
+    expect(find.text('晨间提醒时间'), findsOneWidget);
+    Navigator.of(tester.element(find.text('晨间提醒时间'))).pop();
+    await tester.pumpAndSettle();
     await tester.tap(find.text('浅色'));
     await tester.pumpAndSettle();
     expect(harness.settings.themeModeSetting, AppThemeMode.light);
-    await tester.tap(find.text('45 分钟'));
+    await tester.ensureVisible(find.text('自定义'));
+    await tester.tap(find.text('自定义'));
+    await tester.pumpAndSettle();
+    expect(find.text('自定义定时'), findsOneWidget);
+    await tester.enterText(find.byType(TextField), '45');
+    await tester.tap(find.text('确定'));
     await tester.pumpAndSettle();
     expect(harness.settings.defaultTimerMinutes, 45);
     await tester.tap(find.byTooltip('关闭'));
@@ -358,7 +370,7 @@ void main() {
     expect(harness.upload.uploads, isEmpty);
     expect(harness.favorite.ids, isEmpty);
     expect(harness.settings.themeModeSetting, AppThemeMode.dark);
-    expect(harness.settings.defaultTimerMinutes, 30);
+    expect(harness.settings.defaultTimerMinutes, 10);
     expect(tester.takeException(), isNull);
   });
 }
