@@ -108,12 +108,12 @@ class _SoundTabState extends State<SoundTab> {
       private: private,
       query: _query,
       hiddenDemoKeys: visibility.hidden,
-    ).take(6).toList(growable: false);
+    ).take(4).toList(growable: false);
     final List<VideoEntry> videos = buildVideoEntries(
       private: private,
       query: _query,
       hiddenDemoKeys: visibility.hidden,
-    ).take(6).toList(growable: false);
+    ).take(4).toList(growable: false);
     return AppBackground(
       tint: context.c.tintSound,
       child: SafeArea(

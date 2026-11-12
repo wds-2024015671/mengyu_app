@@ -54,10 +54,14 @@ void main() {
     expect(find.text('全部视频'), findsOneWidget);
     expect(find.text('雨落窗台'), findsOneWidget);
     expect(find.text('篝火噼啪'), findsOneWidget);
+    expect(find.text('海浪白噪'), findsNothing);
+    expect(find.text('夏夜虫鸣'), findsNothing);
     expect(find.text('风吹草叶'), findsNothing);
+    expect(find.text('炉火'), findsNothing);
+    expect(find.text('溪流'), findsNothing);
     expect(find.text('ASMR'), findsNothing);
     expect(find.text('Nature'), findsNothing);
-    expect(find.text('00:20'), findsNWidgets(6));
+    expect(find.text('00:20'), findsNWidgets(4));
     expect(find.text('45:00'), findsNothing);
     expect(find.byTooltip('收藏'), findsNothing);
     expect(find.text('最近在听'), findsNothing);
