@@ -38,6 +38,11 @@ class ReportWeekChart extends StatelessWidget {
     final double scale = math.max(480, maxMinutes).toDouble();
     final String todayKey = formatDateKey(today);
     final int nights = stats.days.where((SleepDayStat day) => day.hasData).length;
+    const double labelHeight = 16;
+    const double plotHeight = 72;
+    const double referenceMinutes = 480;
+    final double referenceTop =
+        labelHeight + (1 - referenceMinutes / scale) * plotHeight;
 
     return GlassCard(
       outlined: true,
@@ -67,7 +72,7 @@ class ReportWeekChart extends StatelessWidget {
                   Positioned(
                     left: 0,
                     right: 24,
-                    top: 10,
+                    top: referenceTop,
                     child: SizedBox(
                       height: 1,
                       child: CustomPaint(
@@ -77,7 +82,7 @@ class ReportWeekChart extends StatelessWidget {
                   ),
                   Positioned(
                     right: 0,
-                    top: 0,
+                    top: referenceTop - 6,
                     child: Text('8h', style: context.s.micro),
                   ),
                   Row(
