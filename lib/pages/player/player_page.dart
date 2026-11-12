@@ -144,6 +144,7 @@ class _PlayerPageState extends State<PlayerPage> {
                 children: <Widget>[
                   PlayerTopBar(
                     onBack: () => Navigator.maybePop(context),
+                    onTrailing: _openTimer,
                   ),
                   Expanded(
                     child: Selector<PlayerProvider, bool>(
@@ -166,7 +167,6 @@ class _PlayerPageState extends State<PlayerPage> {
                     ) {
                       return PlayerControls(
                         player: _player,
-                        onOpenTimer: _openTimer,
                         canPrevious: canPrevious,
                         canNext: canNext,
                         onPrevious: () => _step(-1),

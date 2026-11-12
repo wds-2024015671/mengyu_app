@@ -5,12 +5,11 @@ import 'package:provider/provider.dart';
 import '../../../providers/player_provider.dart';
 import 'player_progress_ring.dart';
 
-/// v7 播放控制：上一首 / 金色播放 / 下一首 / 定时列表。
+/// v7 播放控制：上一首 / 金色播放 / 下一首。
 class PlayerControls extends StatelessWidget {
   const PlayerControls({
     super.key,
     required this.player,
-    required this.onOpenTimer,
     required this.canPrevious,
     required this.canNext,
     required this.onPrevious,
@@ -18,7 +17,6 @@ class PlayerControls extends StatelessWidget {
   });
 
   final PlayerProvider player;
-  final VoidCallback onOpenTimer;
   final bool canPrevious;
   final bool canNext;
   final VoidCallback onPrevious;
@@ -52,12 +50,7 @@ class PlayerControls extends StatelessWidget {
               : context.c.textTertiary,
           onPressed: canNext && !loading ? onNext : null,
         ),
-        _IconControl(
-          tooltip: '定时',
-          icon: Icons.format_list_bulleted,
-          color: context.c.textSecondary,
-          onPressed: onOpenTimer,
-        ),
+        const SizedBox(width: 44, height: 44),
       ],
     );
   }

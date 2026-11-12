@@ -132,6 +132,10 @@ void main() {
 
     expect(find.text('未设定时'), findsOneWidget);
 
+    final Offset timerCenter = tester.getCenter(find.byTooltip('定时'));
+    expect(timerCenter.dy, lessThan(100));
+    expect(timerCenter.dx, greaterThan(180));
+
     await tester.tap(find.byTooltip('定时'));
     await tester.pumpAndSettle();
     expect(find.text('定时关闭'), findsOneWidget);
