@@ -14,6 +14,7 @@ import 'widgets/home_header.dart';
 import 'widgets/home_shortcuts.dart';
 import 'widgets/home_tonight_card.dart';
 import 'widgets/home_tonight_cta.dart';
+import 'widgets/sleep_tips_card.dart';
 import 'widgets/sound_catalog.dart';
 import 'widgets/sound_list_entry.dart';
 import '../player/video_player_page.dart';
@@ -116,6 +117,8 @@ class _HomeTabState extends State<HomeTab> {
               ),
               const SizedBox(height: AppSpacing.xxl),
               HomeShortcuts(onOpenReport: widget.onOpenReport),
+              const SizedBox(height: AppSpacing.xxl),
+              const SleepTipsCard(),
             ],
           ),
         ),
