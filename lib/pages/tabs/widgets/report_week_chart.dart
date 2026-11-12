@@ -151,27 +151,24 @@ class _Bar extends StatelessWidget {
         : isMax
             ? context.c.primary
             : context.c.secondary.withOpacity(0.45);
-    final Widget? marker;
-    if (isToday) {
-      marker = Container(
-        width: 4,
-        height: 4,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: context.c.secondary,
-        ),
-      );
-    } else if (isMax) {
-      marker = Text(
-        label,
-        style: context.s.micro.copyWith(
-          color: context.c.primary,
-          fontWeight: FontWeight.w500,
-        ),
-      );
-    } else {
-      marker = null;
-    }
+    final Color labelColor = isToday
+        ? context.c.secondary
+        : isMax
+            ? context.c.primary
+            : context.c.textTertiary;
+    final Widget? marker = minutes <= 0
+        ? null
+        : FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              label,
+              maxLines: 1,
+              style: context.s.micro.copyWith(
+                color: labelColor,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          );
 
     return Column(
       children: <Widget>[

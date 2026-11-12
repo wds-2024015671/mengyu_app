@@ -13,6 +13,7 @@ Future<SleepProvider> _pumpReport(
   WidgetTester tester, {
   required List<SleepSession> sessions,
   required DateTime today,
+  ValueChanged<Object?>? onSleepRoute,
 }) async {
   tester.view.physicalSize = const Size(360, 800);
   tester.view.devicePixelRatio = 1;
@@ -32,6 +33,7 @@ Future<SleepProvider> _pumpReport(
         theme: AppTheme.dark,
         home: const Scaffold(body: ReportTab(active: true)),
         onGenerateRoute: (RouteSettings settings) {
+          onSleepRoute?.call(settings.arguments);
           return MaterialPageRoute<bool?>(
             builder: (BuildContext context) =>
                 const Scaffold(body: Center(child: Text('补记页'))),
@@ -101,6 +103,7 @@ void main() {
     expect(find.text('平均入睡'), findsOneWidget);
     expect(find.text('23:10'), findsOneWidget);
     expect(find.text('本周仪式'), findsOneWidget);
+    expect(find.text('7h30m'), findsNWidgets(2));
 
     expect(find.text('本月月迹 · 30 天'), findsOneWidget);
     expect(find.text('月相=完成，横条=时长'), findsOneWidget);
@@ -147,6 +150,31 @@ void main() {
     await tester.tap(button);
     await tester.pumpAndSettle();
     expect(find.text('补记页'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('月迹：点哪一天就用哪一天作为补记入睡日', (
+    WidgetTester tester,
+  ) async {
+    Object? arguments;
+    await _pumpReport(
+      tester,
+      sessions: _sessions(),
+      today: DateTime(2026, 11, 12),
+      onSleepRoute: (Object? value) => arguments = value,
+    );
+
+    final Finder cell = find.byKey(
+      const ValueKey<String>('moon-2026-11-08'),
+    );
+    await tester.ensureVisible(cell);
+    await tester.tap(cell);
+    await tester.pumpAndSettle();
+
+    expect(arguments, isA<SleepSession>());
+    final SleepSession session = arguments! as SleepSession;
+    expect(session.bedTime, DateTime(2026, 11, 8, 23));
+    expect(session.wakeTime, DateTime(2026, 11, 9, 7));
     expect(tester.takeException(), isNull);
   });
 

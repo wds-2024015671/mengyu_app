@@ -4,16 +4,14 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../utils/formatters.dart';
 
-/// v7 今晚页头部：左侧日期/问候/一句话/元信息，右侧 72 月亮（无头像）。
+/// v7 今晚页头部：左侧日期/问候/一句话，右侧 72 月亮（无头像）。
 class HomeHeader extends StatelessWidget {
   const HomeHeader({
     super.key,
     required this.nickname,
-    required this.meta,
   });
 
   final String nickname;
-  final String meta;
 
   static const List<String> _weekdays = <String>[
     '周一',
@@ -50,8 +48,6 @@ class HomeHeader extends StatelessWidget {
                 '把今天，轻轻放下。',
                 style: context.s.bodySecondary,
               ),
-              const SizedBox(height: AppSpacing.md),
-              Text(meta, style: context.s.captionMuted),
             ],
           ),
         ),

@@ -32,7 +32,7 @@ void main() {
     expect(data.lengthInBytes, greaterThan(1000));
   });
 
-  testWidgets('首页：推荐卡 / 连续 0 天 / 快捷入口 / 下拉刷新', (WidgetTester tester) async {
+  testWidgets('首页：推荐卡 / 快捷入口 / 下拉刷新', (WidgetTester tester) async {
     _usePhoneSize(tester);
     await tester.pumpWidget(MengYuApp(audioEngineFactory: () => FakeAudioEngine()));
     await tester.pump(const Duration(milliseconds: 2600));
@@ -40,8 +40,6 @@ void main() {
 
     expect(find.text('今夜推荐'), findsOneWidget);
     expect(find.text('雨声'), findsOneWidget);
-    // 测试环境没有 sqflite 插件，SleepProvider 加载失败后列表为空 → 无记录文案
-    expect(find.text('今晚，从第一晚开始'), findsOneWidget);
     expect(find.text('呼吸'), findsOneWidget);
     expect(find.text('日记'), findsOneWidget);
     expect(find.byType(RefreshIndicator), findsOneWidget);

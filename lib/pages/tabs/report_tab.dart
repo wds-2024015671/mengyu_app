@@ -64,8 +64,8 @@ class _ReportTabState extends State<ReportTab> {
   }
   SleepSession _blankForDate(DateTime date) {
     return SleepSession(
-      bedTime: DateTime(date.year, date.month, date.day - 1, 23),
-      wakeTime: DateTime(date.year, date.month, date.day, 7),
+      bedTime: DateTime(date.year, date.month, date.day, 23),
+      wakeTime: DateTime(date.year, date.month, date.day + 1, 7),
       quality: 3,
     );
   }

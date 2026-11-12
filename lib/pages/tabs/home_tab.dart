@@ -8,7 +8,6 @@ import '../../models/sleep_session.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/sleep_provider.dart';
 import '../../providers/sound_provider.dart';
-import '../../utils/formatters.dart';
 import '../../widgets/app_background.dart';
 import '../../widgets/section_header.dart';
 import 'widgets/home_header.dart';
@@ -70,36 +69,6 @@ class _HomeTabState extends State<HomeTab> {
     }
     await context.read<SleepProvider>().load();
   }
-  String _meta(SleepProvider sleep) {
-    if (sleep.recent.isEmpty) {
-      return '今晚，从第一晚开始';
-    }
-    final SleepSession session = sleep.recent.first;
-    final DateTime now = DateTime.now();
-    final DateTime today = DateTime(now.year, now.month, now.day);
-    final DateTime day = DateTime(
-      session.bedTime.year,
-      session.bedTime.month,
-      session.bedTime.day,
-    );
-    final int diff = today.difference(day).inDays;
-    final String label = diff == 0
-        ? '今天'
-        : diff == 1
-            ? '昨晚'
-            : formatMonthDay(day).replaceAll(' ', '');
-    return '$label ${formatClock(session.bedTime)} · '
-        '${_compactDuration(session.durationMin)} · '
-        '连续 ${sleep.weekStats.streakDays} 天';
-  }
-  String _compactDuration(int minutes) {
-    final int hours = minutes ~/ 60;
-    final int rest = minutes % 60;
-    if (hours == 0) {
-      return '${rest}m';
-    }
-    return rest == 0 ? '${hours}h' : '${hours}h${rest}m';
-  }
   @override
   Widget build(BuildContext context) {
     final AuthProvider auth = context.watch<AuthProvider>();
@@ -125,7 +94,7 @@ class _HomeTabState extends State<HomeTab> {
               AppSpacing.xxxl,
             ),
             children: <Widget>[
-              HomeHeader(nickname: auth.nickname, meta: _meta(sleep)),
+              HomeHeader(nickname: auth.nickname),
               const SizedBox(height: AppSpacing.xxl),
               HomeTonightCta(
                 onTap: () => Navigator.pushNamed(context, AppRoutes.breathing),
