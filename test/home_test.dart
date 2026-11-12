@@ -39,13 +39,15 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('今夜推荐'), findsOneWidget);
-    expect(find.text('雨声'), findsOneWidget);
+    expect(find.text('轻触发音'), findsOneWidget);
+    expect(find.text('雨落窗台'), findsOneWidget);
+    expect(find.text('最近播放'), findsNothing);
     expect(find.text('呼吸'), findsOneWidget);
     expect(find.text('日记'), findsOneWidget);
     expect(find.byType(RefreshIndicator), findsOneWidget);
 
-    // 推荐卡 → /player（带 AudioItem）
-    await tester.tap(find.text('雨声'));
+    // 推荐卡音频行 → /player（带 AudioItem）
+    await tester.tap(find.text('雨落窗台'));
     await tester.pumpAndSettle();
     expect(find.text('正在播放'), findsOneWidget);
 

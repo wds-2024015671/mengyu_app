@@ -1,148 +1,178 @@
-import 'package:mengyu_app/core/theme/app_tokens.dart';
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_theme.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../../../models/audio_item.dart';
 import '../../../widgets/audio_cover.dart';
 import '../../../widgets/glass_card.dart';
+import 'sound_list_entry.dart';
 
-/// v7 今夜推荐卡：描边卡 + 64 封面 + 16/11/11 文案 + 36 圆形播放按钮。
-///
-/// 加载/错误/空态都收在卡内，不使用第二个金色主按钮。
+/// 今夜推荐：一个外框内上下两行，上视频、下音频。
 class TonightCard extends StatelessWidget {
   const TonightCard({
     super.key,
-    required this.item,
-    required this.isLoading,
-    required this.error,
-    required this.onRetry,
-    required this.onPlay,
+    required this.video,
+    required this.audio,
+    required this.onPlayVideo,
+    required this.onPlayAudio,
   });
 
-  final AudioItem? item;
-  final bool isLoading;
-  final String? error;
-  final VoidCallback onRetry;
-  final ValueChanged<AudioItem> onPlay;
+  final VideoEntry? video;
+  final AudioItem? audio;
+  final ValueChanged<VideoEntry> onPlayVideo;
+  final ValueChanged<AudioItem> onPlayAudio;
 
   @override
   Widget build(BuildContext context) {
-    final AudioItem? current = item;
-    if (current == null) {
-      return GlassCard(
-        outlined: true,
-        child: Row(
-          children: <Widget>[
-            if (isLoading)
-              SizedBox(
-                width: 18,
-                height: 18,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: context.c.secondary,
-                ),
-              )
-            else
-              Icon(
-                Icons.graphic_eq,
-                size: 24,
-                color: context.c.textTertiary,
-              ),
-            const SizedBox(width: AppSpacing.md),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Text(
-                    isLoading ? '正在挑选今夜的声音…' : '音景还没到岛上',
-                    style: context.s.subtitle,
-                  ),
-                  const SizedBox(height: AppSpacing.xs),
-                  Text(
-                    isLoading ? '马上就好' : (error ?? '稍后下拉刷新再试试。'),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: context.s.caption,
-                  ),
-                ],
-              ),
-            ),
-            if (!isLoading)
-              TextButton(
-                onPressed: onRetry,
-                style: TextButton.styleFrom(
-                  foregroundColor: context.c.textSecondary,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.sm,
-                  ),
-                  minimumSize: const Size(0, 32),
-                  textStyle: context.s.caption,
-                ),
-                child: const Text('重试'),
-              ),
-          ],
-        ),
-      );
-    }
-
     return GlassCard(
       outlined: true,
-      onTap: () => onPlay(current),
-      child: Row(
+      padding: EdgeInsets.zero,
+      child: Column(
         children: <Widget>[
-          AudioCover(
-            item: current,
-            width: 64,
-            height: 64,
-            radius: AppRadius.control,
-            iconSize: 20,
+          _RecommendRow(
+            cover: _videoCover(context),
+            title: video?.title ?? '还没有视频',
+            enabled: video != null,
+            onTap: video == null ? null : () => onPlayVideo(video!),
           ),
-          const SizedBox(width: AppSpacing.md),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Text(current.title, style: context.s.subtitle),
-                const SizedBox(height: AppSpacing.xs),
-                Text(
-                  '${current.category} · ${_durationText(current)}',
-                  style: context.s.caption,
-                ),
-                if (current.description.isNotEmpty) ...<Widget>[
-                  const SizedBox(height: AppSpacing.xs),
-                  Text(
-                    current.description,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: context.s.captionMuted,
-                  ),
-                ],
-              ],
-            ),
+          Divider(
+            height: 1,
+            thickness: 1,
+            indent: AppSpacing.lg,
+            endIndent: AppSpacing.lg,
+            color: context.c.stroke,
           ),
-          const SizedBox(width: AppSpacing.sm),
-          Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(color: context.c.stroke),
-            ),
-            child: Icon(
-              Icons.play_arrow,
-              size: 20,
-              color: context.c.textSecondary,
-            ),
+          _RecommendRow(
+            cover: _audioCover(context),
+            title: audio?.title ?? '还没有音频',
+            enabled: audio != null,
+            onTap: audio == null ? null : () => onPlayAudio(audio!),
           ),
         ],
       ),
     );
   }
 
-  String _durationText(AudioItem item) {
-    if (item.durationSec <= 0) {
-      return '循环';
+  Widget _videoCover(BuildContext context) {
+    final String? asset = video?.coverAsset;
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(AppRadius.control),
+      child: SizedBox(
+        width: 64,
+        height: 64,
+        child: asset == null
+            ? ColoredBox(
+                color: context.c.cover,
+                child: Icon(
+                  Icons.videocam_outlined,
+                  size: 20,
+                  color: context.c.textSecondary,
+                ),
+              )
+            : Image.asset(
+                asset,
+                fit: BoxFit.cover,
+                errorBuilder: (
+                  BuildContext context,
+                  Object error,
+                  StackTrace? stackTrace,
+                ) =>
+                    ColoredBox(
+                  color: context.c.cover,
+                  child: Icon(
+                    Icons.videocam_outlined,
+                    size: 20,
+                    color: context.c.textSecondary,
+                  ),
+                ),
+              ),
+      ),
+    );
+  }
+
+  Widget _audioCover(BuildContext context) {
+    final AudioItem? item = audio;
+    if (item == null) {
+      return Container(
+        width: 64,
+        height: 64,
+        decoration: BoxDecoration(
+          color: context.c.cover,
+          borderRadius: BorderRadius.circular(AppRadius.control),
+        ),
+        child: Icon(
+          Icons.graphic_eq,
+          size: 20,
+          color: context.c.textSecondary,
+        ),
+      );
     }
-    return '${(item.durationSec / 60).ceil()} 分钟';
+    return AudioCover(
+      item: item,
+      width: 64,
+      height: 64,
+      radius: AppRadius.control,
+      iconSize: 20,
+    );
+  }
+}
+
+class _RecommendRow extends StatelessWidget {
+  const _RecommendRow({
+    required this.cover,
+    required this.title,
+    required this.enabled,
+    required this.onTap,
+  });
+
+  final Widget cover;
+  final String title;
+  final bool enabled;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        child: SizedBox(
+          height: 80,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+            child: Row(
+              children: <Widget>[
+                cover,
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: Text(
+                    title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: context.s.subtitle,
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.sm),
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(color: context.c.stroke),
+                  ),
+                  child: Icon(
+                    Icons.play_arrow,
+                    size: 20,
+                    color: enabled
+                        ? context.c.textSecondary
+                        : context.c.textTertiary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }

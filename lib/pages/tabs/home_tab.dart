@@ -4,18 +4,20 @@ import 'package:provider/provider.dart';
 import '../../core/routes/app_routes.dart';
 import '../../core/theme/app_theme.dart';
 import '../../models/audio_item.dart';
-import '../../models/sleep_session.dart';
 import '../../providers/auth_provider.dart';
-import '../../providers/sleep_provider.dart';
+import '../../providers/demo_visibility_provider.dart';
+import '../../providers/private_media_provider.dart';
 import '../../providers/sound_provider.dart';
 import '../../widgets/app_background.dart';
 import '../../widgets/section_header.dart';
 import 'widgets/home_header.dart';
-import 'widgets/home_recent_list.dart';
 import 'widgets/home_shortcuts.dart';
 import 'widgets/home_tonight_card.dart';
 import 'widgets/home_tonight_cta.dart';
-/// v7 今晚：头部、唯一金色 CTA、今夜推荐、最近播放、三入口。
+import 'widgets/sound_catalog.dart';
+import 'widgets/sound_list_entry.dart';
+import '../player/video_player_page.dart';
+/// v7 今晚：头部、唯一金色 CTA、双行今夜推荐、三入口。
 class HomeTab extends StatefulWidget {
   const HomeTab({
     super.key,
@@ -36,16 +38,16 @@ class _HomeTabState extends State<HomeTab> {
         return;
       }
       context.read<SoundProvider>().loadLocal();
-      context.read<SleepProvider>().ensureLoaded();
+      context.read<PrivateMediaProvider>().ensureLoaded();
+      context.read<DemoVisibilityProvider>().ensureLoaded();
     });
   }
   Future<void> _refresh() async {
     final SoundProvider sound = context.read<SoundProvider>();
-    final SleepProvider sleep = context.read<SleepProvider>();
-    await Future.wait<void>(<Future<void>>[
-      sound.loadLocal(),
-      sleep.load(),
-    ]);
+    final PrivateMediaProvider private =
+        context.read<PrivateMediaProvider>();
+    await sound.loadLocal();
+    await private.ensureLoaded();
   }
   Future<void> _openPlayer(AudioItem item) async {
     await Navigator.pushNamed<bool?>(
@@ -58,26 +60,28 @@ class _HomeTabState extends State<HomeTab> {
     }
     await context.read<SoundProvider>().loadLocal();
   }
-  Future<void> _openSession(SleepSession session) async {
-    final bool? saved = await Navigator.pushNamed<bool>(
-      context,
-      AppRoutes.sleepLogForm,
-      arguments: session,
-    );
-    if (!mounted || saved != true) {
-      return;
-    }
-    await context.read<SleepProvider>().load();
+  Future<void> _openVideo(VideoEntry video) async {
+    await openVideoPlayer(context, video);
   }
   @override
   Widget build(BuildContext context) {
     final AuthProvider auth = context.watch<AuthProvider>();
     final SoundProvider sound = context.watch<SoundProvider>();
-    final SleepProvider sleep = context.watch<SleepProvider>();
-    final AudioItem? tonight =
-        sound.localAudios.isEmpty ? null : sound.localAudios.first;
-    final List<SleepSession> recent =
-        sleep.recent.take(2).toList(growable: false);
+    final PrivateMediaProvider private =
+        context.watch<PrivateMediaProvider>();
+    final DemoVisibilityProvider visibility =
+        context.watch<DemoVisibilityProvider>();
+    final List<SoundListEntry> sounds = buildSoundEntries(
+      sound: sound,
+      private: private,
+      query: '',
+      hiddenDemoKeys: visibility.hidden,
+    );
+    final List<VideoEntry> videos = buildVideoEntries(
+      private: private,
+      query: '',
+      hiddenDemoKeys: visibility.hidden,
+    );
     return AppBackground(
       tint: context.c.tintTonight,
       child: SafeArea(
@@ -105,25 +109,11 @@ class _HomeTabState extends State<HomeTab> {
                 onAction: widget.onOpenSound,
               ),
               TonightCard(
-                item: tonight,
-                isLoading: sound.isLoadingLocal,
-                error: sound.errorLocal,
-                onRetry: () => sound.loadLocal(),
-                onPlay: _openPlayer,
+                video: videos.isEmpty ? null : videos.first,
+                audio: sounds.isEmpty ? null : sounds.first.item,
+                onPlayVideo: _openVideo,
+                onPlayAudio: _openPlayer,
               ),
-              if (recent.isNotEmpty) ...<Widget>[
-                SectionHeader(
-                  title: '最近播放',
-                  actionLabel: '全部',
-                  onAction: widget.onOpenReport,
-                ),
-                HomeRecentList(
-                  sessions: recent,
-                  audios: sound.localAudios,
-                  onOpenAudio: _openPlayer,
-                  onOpenSession: _openSession,
-                ),
-              ],
               const SizedBox(height: AppSpacing.xxl),
               HomeShortcuts(onOpenReport: widget.onOpenReport),
             ],
