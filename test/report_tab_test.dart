@@ -31,6 +31,12 @@ Future<SleepProvider> _pumpReport(
       child: MaterialApp(
         theme: AppTheme.dark,
         home: const Scaffold(body: ReportTab(active: true)),
+        onGenerateRoute: (RouteSettings settings) {
+          return MaterialPageRoute<bool?>(
+            builder: (BuildContext context) =>
+                const Scaffold(body: Center(child: Text('补记页'))),
+          );
+        },
       ),
     ),
   );
@@ -118,6 +124,29 @@ void main() {
     expect(cards.where((GlassCard card) => card.outlined).length, 2);
     expect(find.text('最近记录'), findsNothing);
     expect(find.text('补记'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('月迹：右下角固定补记按钮不随列表滚动', (
+    WidgetTester tester,
+  ) async {
+    await _pumpReport(
+      tester,
+      sessions: _sessions(),
+      today: DateTime(2026, 11, 12),
+    );
+
+    final Finder button = find.byKey(const ValueKey<String>('report-add'));
+    expect(button, findsOneWidget);
+    final Offset before = tester.getCenter(button);
+
+    await tester.drag(find.byType(ListView).first, const Offset(0, -260));
+    await tester.pumpAndSettle();
+    expect(tester.getCenter(button), before);
+
+    await tester.tap(button);
+    await tester.pumpAndSettle();
+    expect(find.text('补记页'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 

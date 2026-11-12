@@ -1,7 +1,6 @@
 import 'package:mengyu_app/core/theme/app_tokens.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
 import '../../core/routes/app_routes.dart';
 import '../../core/theme/app_theme.dart';
 import '../../models/sleep_session.dart';
@@ -15,26 +14,20 @@ import 'widgets/report_moon_grid.dart';
 import 'widgets/report_stats.dart';
 import 'widgets/report_summary.dart';
 import 'widgets/report_week_chart.dart';
-
 /// v7 月迹：周汇总、7 晚柱状图、三项统计、30 天月相。
 class ReportTab extends StatefulWidget {
   const ReportTab({super.key, required this.active});
-
   final bool active;
-
   @override
   State<ReportTab> createState() => _ReportTabState();
 }
-
 class _ReportTabState extends State<ReportTab> {
   int _weekOffset = 0;
-
   @override
   void initState() {
     super.initState();
     _loadIfActive();
   }
-
   @override
   void didUpdateWidget(covariant ReportTab oldWidget) {
     super.didUpdateWidget(oldWidget);
@@ -42,7 +35,6 @@ class _ReportTabState extends State<ReportTab> {
       _loadIfActive();
     }
   }
-
   void _loadIfActive() {
     if (!widget.active) {
       return;
@@ -53,7 +45,6 @@ class _ReportTabState extends State<ReportTab> {
       }
     });
   }
-
   Future<void> _openSleepLog({SleepSession? session}) async {
     final bool? saved = await Navigator.pushNamed<bool>(
       context,
@@ -71,7 +62,6 @@ class _ReportTabState extends State<ReportTab> {
       const SnackBar(content: Text('已补记，月迹已更新')),
     );
   }
-
   SleepSession _blankForDate(DateTime date) {
     return SleepSession(
       bedTime: DateTime(date.year, date.month, date.day - 1, 23),
@@ -79,7 +69,6 @@ class _ReportTabState extends State<ReportTab> {
       quality: 3,
     );
   }
-
   String _range(SleepWeekStats stats) {
     final String first =
         formatMonthDay(stats.days.first.date).replaceAll(' ', '');
@@ -87,7 +76,6 @@ class _ReportTabState extends State<ReportTab> {
         formatMonthDay(stats.days.last.date).replaceAll(' ', '');
     return '$first — $last';
   }
-
   String get _weekLabel {
     if (_weekOffset == 0) {
       return '本周';
@@ -97,7 +85,6 @@ class _ReportTabState extends State<ReportTab> {
     }
     return '${-_weekOffset} 周前';
   }
-
   @override
   Widget build(BuildContext context) {
     final SleepProvider sleep = context.watch<SleepProvider>();
@@ -120,34 +107,41 @@ class _ReportTabState extends State<ReportTab> {
               !session.date.isBefore(start) && session.date.isBefore(end),
         )
         .toList(growable: false);
-
     return AppBackground(
       tint: context.c.tintReport,
       child: SafeArea(
         bottom: false,
-        child: Column(
+        child: Stack(
           children: <Widget>[
-            ReportHeader(
-              range: _range(stats),
-              weekLabel: _weekLabel,
-              canNext: _weekOffset < 0,
-              onPrevious: () => setState(() => _weekOffset--),
-              onNext: () => setState(() => _weekOffset++),
+            Column(
+              children: <Widget>[
+                ReportHeader(
+                  range: _range(stats),
+                  weekLabel: _weekLabel,
+                  canNext: _weekOffset < 0,
+                  onPrevious: () => setState(() => _weekOffset--),
+                  onNext: () => setState(() => _weekOffset++),
+                ),
+                Expanded(
+                  child: _body(
+                    sleep,
+                    stats,
+                    previous,
+                    weekSessions,
+                  ),
+                ),
+              ],
             ),
-            Expanded(
-              child: _body(
-                sleep,
-                stats,
-                previous,
-                weekSessions,
-              ),
+            Positioned(
+              right: AppSpacing.page,
+              bottom: AppSpacing.page,
+              child: _ReportAddButton(onTap: () => _openSleepLog()),
             ),
           ],
         ),
       ),
     );
   }
-
   Widget _body(
     SleepProvider sleep,
     SleepWeekStats stats,
@@ -180,7 +174,6 @@ class _ReportTabState extends State<ReportTab> {
         onAction: () => _openSleepLog(),
       );
     }
-
     return RefreshIndicator(
       color: context.c.secondary,
       backgroundColor: context.c.cover,
@@ -217,6 +210,35 @@ class _ReportTabState extends State<ReportTab> {
                 _openSleepLog(session: session),
           ),
         ],
+      ),
+    );
+  }
+}
+/// 月迹固定悬浮补记按钮：不随列表滚动，位置在页面右下角。
+class _ReportAddButton extends StatelessWidget {
+  const _ReportAddButton({required this.onTap});
+  final VoidCallback onTap;
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: '补记睡眠',
+      child: Material(
+        color: context.c.primary,
+        shape: const CircleBorder(),
+        child: InkWell(
+          key: const ValueKey<String>('report-add'),
+          onTap: onTap,
+          customBorder: const CircleBorder(),
+          child: SizedBox(
+            width: 56,
+            height: 56,
+            child: Icon(
+              Icons.add,
+              size: 24,
+              color: context.c.onGold,
+            ),
+          ),
+        ),
       ),
     );
   }
