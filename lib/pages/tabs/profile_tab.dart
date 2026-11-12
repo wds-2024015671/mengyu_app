@@ -15,7 +15,6 @@ import 'widgets/profile_dialogs.dart';
 import 'widgets/profile_entries.dart';
 import 'widgets/profile_header.dart';
 import 'widgets/profile_stats.dart';
-import 'widgets/profile_tracking_status.dart';
 import 'widgets/settings_sheet.dart';
 
 /// v7 我的：资料、两项统计、设置/关于/退出。
@@ -183,8 +182,6 @@ class _ProfileTabState extends State<ProfileTab> {
                 onLogout: () => confirmProfileLogout(context),
               ),
               const SizedBox(height: AppSpacing.xxl),
-              const ProfileTrackingStatus(),
-              const SizedBox(height: AppSpacing.md),
               Text(
                 'MENGYU v1.0.0',
                 textAlign: TextAlign.center,

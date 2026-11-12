@@ -1,10 +1,10 @@
 # 梦屿 · mengyu_app
 
 睡眠与声音疗愈 App 的前端工程（F01–F13 已完成并审查）。当前包含：全部功能页 + 欢迎/登录、
-14 条命名路由、浅/深双主题与公共组件、本地数据层（sqlite v3 / 自动睡眠记录状态机 /
+14 条命名路由、浅/深双主题与公共组件、本地数据层（sqlite v4 / 手动睡眠记录 /
 DAO / Repository Local 实现 / 10 个 Provider）、欢迎/登录/游客、MainShell 登录守卫、
 正式版首页、声屿私人库/声音列表/视频大框、上传页、播放器与定时、呼吸两页、日记列表/编辑、
-睡眠补记与晨间确认、月迹周统计/月相/最近记录、头像上传、我的页与设置弹窗。
+睡眠补记、月迹周统计/月相/最近记录、头像上传、我的页与设置弹窗。
 网络请求仍留到后端阶段。
 
 ## 运行
@@ -74,7 +74,7 @@ lib/
 ## F01–F13 验收状态
 
 - `flutter analyze`：0 issue
-- `flutter test`：129 个测试全部通过
+- `flutter test`：120 个测试全部通过
 - 360×800：`test/routes_smoke_test.dart` 逐条打开 14 条路由，无 RenderFlex 溢出
 - 360×800：`test/components_test.dart` 组合渲染 8 个公共组件，无 RenderFlex 溢出
 - 360×800：`test/home_test.dart` 首页推荐卡 → 播放器、月迹切 tab、下拉刷新、未登录重定向
@@ -246,7 +246,7 @@ lib/
 - 7 个 Repository 接口（Auth/Sound/Upload/Diary/Session/Favorite/Settings）都保留；
   页面没有直接 import `sqflite` / `dio` / `shared_preferences` / `path_provider`。
   `UploadPage` 只 import `audio_file_picker` 这个可注入的服务，属于 F07 的刻意设计。
-- 全量 `flutter analyze` 0 issue；129 个测试通过；360×800 路由/组件/播放器/呼吸/日记/月迹/我的均有覆盖。
+- 全量 `flutter analyze` 0 issue；120 个测试通过；360×800 路由/组件/播放器/呼吸/日记/月迹/我的均有覆盖。
 - 数据页均有 loading / error / empty：声屿三分区、日记、月迹；播放器有 loading/error/retry。
 - Controller/Timer/AudioPlayer/StreamSubscription 均有 dispose 路径；await 后检查 mounted。
 - lib 下无超过 250 行的文件；除 `core/theme` 外没有 `Color(0x...)` 或 `fontSize:` 新字面量。

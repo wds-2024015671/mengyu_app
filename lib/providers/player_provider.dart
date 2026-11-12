@@ -5,7 +5,6 @@ import '../core/audio/play_session_tracker.dart';
 import '../core/audio/player_playback.dart';
 import '../core/audio/sleep_timer.dart';
 import '../data/repositories/session_repository.dart';
-import '../data/services/sleep_tracking_service.dart';
 import '../models/audio_item.dart';
 export '../core/audio/player_playback.dart' show PlayerStatus;
 /// 播放器门面：音频状态 + 睡眠定时 + 声音仪式记录。
@@ -17,11 +16,9 @@ class PlayerProvider extends ChangeNotifier {
   PlayerProvider({
     required AudioEngine Function() engineFactory,
     required SessionRepository sessionRepository,
-    SleepTrackingService? trackingService,
     DateTime Function()? clock,
     Duration timerTick = const Duration(seconds: 1),
-  })  : _clock = clock ?? DateTime.now,
-        _tracking = trackingService {
+  }) : _clock = clock ?? DateTime.now {
     _playback = PlayerPlayback(engineFactory: engineFactory)
       ..onPlayStarted = _handlePlayStarted
       ..addListener(_onPlaybackChanged);
@@ -33,7 +30,6 @@ class PlayerProvider extends ChangeNotifier {
     );
   }
   final DateTime Function() _clock;
-  final SleepTrackingService? _tracking;
   late final PlayerPlayback _playback;
   late final PlaySessionTracker _session;
   late final SleepTimer _sleepTimer;
@@ -111,7 +107,6 @@ class PlayerProvider extends ChangeNotifier {
     _sleepTimer.cancel();
     await _playback.leave();
     await _persistSession();
-    await _tracking?.clearExpected();
     _session.reset();
   }
   /// 当前媒体被删除：停止播放、清空当前项并取消定时。
@@ -119,20 +114,12 @@ class PlayerProvider extends ChangeNotifier {
     _sleepTimer.cancel();
     await _playback.clear();
     _session.reset();
-    await _tracking?.clearExpected();
     if (!_disposed) {
       notifyListeners();
     }
   }
   void startTimer({required Duration duration}) {
     _sleepTimer.start(duration);
-    final AudioItem? item = _playback.current;
-    unawaited(
-      _tracking?.notePlaybackExpectedEnd(
-        expectedEndAt: _clock().add(duration),
-        mediaId: item?.id,
-      ),
-    );
     notifyListeners();
   }
   void cancelTimer() {
@@ -141,20 +128,6 @@ class PlayerProvider extends ChangeNotifier {
   }
   void _handlePlayStarted() {
     _session.start(_clock());
-    final AudioItem? item = _playback.current;
-    if (item != null) {
-      final Duration duration = _playback.duration > Duration.zero
-          ? _playback.duration
-          : Duration(seconds: item.durationSec);
-      if (duration > Duration.zero) {
-        unawaited(
-          _tracking?.notePlaybackExpectedEnd(
-            expectedEndAt: _clock().add(duration),
-            mediaId: item.id,
-          ),
-        );
-      }
-    }
   }
   void _onPlaybackChanged() {
     if (!_disposed) {
@@ -174,38 +147,8 @@ class PlayerProvider extends ChangeNotifier {
     if (_disposed) {
       return;
     }
-    final AudioItem? item = _playback.current;
-    final SleepTrackingService? tracking = _tracking;
-    if (tracking != null) {
-      await tracking.startRecording(
-        at: _clock(),
-        mediaId: item?.id,
-      );
-    }
-    _notice = tracking == null
-        ? '定时结束，已停止播放'
-        : '定时结束，已停止播放 · 已开始记录睡眠';
+    _notice = '定时结束，已停止播放';
     notifyListeners();
-  }
-  /// 用户手动停止时的确认入口：开始自动睡眠记录。
-  Future<bool> startSleepRecording() async {
-    final SleepTrackingService? tracking = _tracking;
-    if (tracking == null) {
-      return false;
-    }
-    final AudioItem? item = _playback.current;
-    final record = await tracking.startRecording(
-      at: _clock(),
-      mediaId: item?.id,
-    );
-    if (record == null) {
-      return false;
-    }
-    if (!_disposed) {
-      _notice = '已开始记录睡眠，明早提醒你确认';
-      notifyListeners();
-    }
-    return true;
   }
   Future<void> _persistSession() async {
     final AudioItem? item = _playback.current;

@@ -1,13 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mengyu_app/data/services/sleep_tracking_service.dart';
 import 'package:mengyu_app/models/audio_item.dart';
-import 'package:mengyu_app/models/sleep_tracking_record.dart';
 import 'package:mengyu_app/providers/player_provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import 'support/fake_audio_engine.dart';
 import 'support/fake_session_repository.dart';
-import 'support/fake_sleep_tracking.dart';
 
 void main() {
   late FakeAudioEngine engine;
@@ -177,37 +173,5 @@ void main() {
     expect(engine.paused, isTrue);
     expect(sessions.saved.length, 1);
     expect(sessions.saved.single.durationMin, 2);
-  });
-
-  test('定时结束 → 自动开始睡眠记录', () async {
-    SharedPreferences.setMockInitialValues(<String, Object>{});
-    final FakeSleepTrackingRepository tracking =
-        FakeSleepTrackingRepository();
-    final FakeSleepNotificationService notifications =
-        FakeSleepNotificationService();
-    final DateTime now = DateTime(2026, 11, 10, 23);
-    final PlayerProvider timed = PlayerProvider(
-      engineFactory: () => engine,
-      sessionRepository: sessions,
-      trackingService: SleepTrackingService(
-        tracking: tracking,
-        sessions: sessions,
-        notifications: notifications,
-        clock: () => now,
-      ),
-      clock: () => now,
-      timerTick: const Duration(milliseconds: 10),
-    );
-    addTearDown(timed.dispose);
-
-    await timed.play(rainAsset());
-    timed.startTimer(duration: const Duration(milliseconds: 30));
-    await Future<void>.delayed(const Duration(milliseconds: 120));
-
-    expect(tracking.records.values.single.status, SleepTrackingStatus.recording);
-    expect(tracking.records.values.single.startAt, now);
-    expect(notifications.scheduled, isTrue);
-    expect(timed.hasTimer, isFalse);
-    expect(timed.takeNotice(), '定时结束，已停止播放 · 已开始记录睡眠');
   });
 }

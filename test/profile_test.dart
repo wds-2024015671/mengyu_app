@@ -6,7 +6,6 @@ import 'package:mengyu_app/core/theme/app_theme.dart';
 import 'package:mengyu_app/data/repositories/local/local_auth_repository.dart';
 import 'package:mengyu_app/data/repositories/local/local_sound_repository.dart';
 import 'package:mengyu_app/data/services/avatar_service.dart';
-import 'package:mengyu_app/data/services/sleep_tracking_service.dart';
 import 'package:mengyu_app/models/audio_item.dart';
 import 'package:mengyu_app/models/diary_entry.dart';
 import 'package:mengyu_app/models/sleep_session.dart';
@@ -17,7 +16,6 @@ import 'package:mengyu_app/providers/diary_provider.dart';
 import 'package:mengyu_app/providers/favorite_provider.dart';
 import 'package:mengyu_app/providers/settings_provider.dart';
 import 'package:mengyu_app/providers/sleep_provider.dart';
-import 'package:mengyu_app/providers/sleep_tracking_provider.dart';
 import 'package:mengyu_app/providers/sound_provider.dart';
 import 'package:mengyu_app/providers/upload_provider.dart';
 import 'package:provider/provider.dart';
@@ -28,7 +26,6 @@ import 'support/fake_diary_repository.dart';
 import 'support/fake_favorite_repository.dart';
 import 'support/fake_session_repository.dart';
 import 'support/fake_settings.dart';
-import 'support/fake_sleep_tracking.dart';
 import 'support/fake_upload_repository.dart';
 
 typedef ProfileHarness = ({
@@ -41,7 +38,6 @@ typedef ProfileHarness = ({
   SettingsProvider settings,
   AvatarProvider avatar,
   FakeAvatarService avatarService,
-  SleepTrackingProvider tracking,
   FakeAppDataCleaner cleaner,
 });
 
@@ -107,14 +103,6 @@ Future<ProfileHarness> _pumpProfile(WidgetTester tester) async {
   final FakeAvatarService avatarService = FakeAvatarService();
   final AvatarProvider avatar = AvatarProvider(avatarService);
   await avatar.ensureLoaded();
-  final SleepTrackingService trackingService = SleepTrackingService(
-    tracking: FakeSleepTrackingRepository(),
-    sessions: FakeSessionRepository(),
-    notifications: FakeSleepNotificationService(),
-    clock: () => DateTime(2026, 11, 12, 7, 30),
-  );
-  final SleepTrackingProvider tracking =
-      SleepTrackingProvider(trackingService);
 
   addTearDown(auth.dispose);
   addTearDown(sleep.dispose);
@@ -124,7 +112,6 @@ Future<ProfileHarness> _pumpProfile(WidgetTester tester) async {
   addTearDown(sound.dispose);
   addTearDown(settings.dispose);
   addTearDown(avatar.dispose);
-  addTearDown(tracking.dispose);
 
   await tester.pumpWidget(
     MultiProvider(
@@ -137,7 +124,6 @@ Future<ProfileHarness> _pumpProfile(WidgetTester tester) async {
         ChangeNotifierProvider<SoundProvider>.value(value: sound),
         ChangeNotifierProvider<SettingsProvider>.value(value: settings),
         ChangeNotifierProvider<AvatarProvider>.value(value: avatar),
-        ChangeNotifierProvider<SleepTrackingProvider>.value(value: tracking),
       ],
       child: MaterialApp(
         theme: AppTheme.dark,
@@ -175,7 +161,6 @@ Future<ProfileHarness> _pumpProfile(WidgetTester tester) async {
     settings: settings,
     avatar: avatar,
     avatarService: avatarService,
-    tracking: tracking,
     cleaner: cleaner,
   );
 }
@@ -220,20 +205,10 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('主题'), findsOneWidget);
     expect(find.text('默认定时'), findsOneWidget);
-    expect(find.text('睡眠记录'), findsOneWidget);
-    expect(find.text('自动记录睡眠'), findsOneWidget);
-    expect(find.text('晨间确认提醒'), findsOneWidget);
-    expect(find.text('07:30'), findsOneWidget);
-    await tester.tap(find.text('开启提醒'));
-    await tester.pumpAndSettle();
-    expect(harness.tracking.hasPermission, isTrue);
+    expect(find.text('睡眠记录'), findsNothing);
+    expect(find.text('自动记录睡眠'), findsNothing);
+    expect(find.text('晨间确认提醒'), findsNothing);
 
-    await tester.ensureVisible(find.text('07:30'));
-    await tester.tap(find.text('07:30'));
-    await tester.pumpAndSettle();
-    expect(find.text('晨间提醒时间'), findsOneWidget);
-    Navigator.of(tester.element(find.text('晨间提醒时间'))).pop();
-    await tester.pumpAndSettle();
     await tester.tap(find.text('浅色'));
     await tester.pumpAndSettle();
     expect(harness.settings.themeModeSetting, AppThemeMode.light);

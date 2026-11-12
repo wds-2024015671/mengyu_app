@@ -8,7 +8,6 @@ import '../../../providers/diary_provider.dart';
 import '../../../providers/favorite_provider.dart';
 import '../../../providers/settings_provider.dart';
 import '../../../providers/sleep_provider.dart';
-import '../../../providers/sleep_tracking_provider.dart';
 import '../../../providers/upload_provider.dart';
 import 'info_content.dart';
 import 'info_dialog.dart';
@@ -135,7 +134,6 @@ Future<void> confirmClearProfileData(BuildContext context) async {
   context.read<AuthProvider>().reset();
   context.read<DiaryProvider>().reset();
   context.read<SleepProvider>().reset();
-  context.read<SleepTrackingProvider>().reset();
   context.read<UploadProvider>().reset();
   context.read<FavoriteProvider>().reset();
   ScaffoldMessenger.of(context).showSnackBar(

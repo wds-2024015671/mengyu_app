@@ -7,7 +7,6 @@ import '../../../core/theme/app_theme.dart';
 import '../../../providers/settings_provider.dart';
 import '../../../widgets/custom_minutes_dialog.dart';
 import 'settings_controls.dart';
-import 'settings_sleep_section.dart';
 
 /// v7 设置底部弹窗：#12152B、20 圆角、48 行高、44/14 选择按钮。
 class SettingsSheet extends StatelessWidget {
@@ -170,8 +169,6 @@ class SettingsSheet extends StatelessWidget {
                     style: context.s.captionMuted,
                   ),
                 ),
-              const SizedBox(height: AppSpacing.xxl),
-              const SettingsSleepSection(),
               const SizedBox(height: AppSpacing.xxl),
               Divider(height: 1, color: context.c.stroke),
               SettingsMenuRow(

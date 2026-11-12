@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:mengyu_app/core/theme/app_tokens.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -6,10 +5,8 @@ import '../../core/routes/app_routes.dart';
 import '../../core/theme/app_theme.dart';
 import '../../models/audio_item.dart';
 import '../../models/sleep_session.dart';
-import '../../models/sleep_tracking_record.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/sleep_provider.dart';
-import '../../providers/sleep_tracking_provider.dart';
 import '../../providers/sound_provider.dart';
 import '../../utils/formatters.dart';
 import '../../widgets/app_background.dart';
@@ -19,8 +16,6 @@ import 'widgets/home_recent_list.dart';
 import 'widgets/home_shortcuts.dart';
 import 'widgets/home_tonight_card.dart';
 import 'widgets/home_tonight_cta.dart';
-import 'widgets/sleep_confirm_dialog.dart';
-import 'widgets/sleep_pending_banner.dart';
 /// v7 今晚：头部、唯一金色 CTA、今夜推荐、最近播放、三入口。
 class HomeTab extends StatefulWidget {
   const HomeTab({
@@ -33,87 +28,17 @@ class HomeTab extends StatefulWidget {
   @override
   State<HomeTab> createState() => _HomeTabState();
 }
-class _HomeTabState extends State<HomeTab> with WidgetsBindingObserver {
-  bool _promptShowing = false;
-  SleepTrackingProvider? _tracking;
+class _HomeTabState extends State<HomeTab> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) {
         return;
       }
       context.read<SoundProvider>().loadLocal();
       context.read<SleepProvider>().ensureLoaded();
-      final SleepTrackingProvider tracking =
-          context.read<SleepTrackingProvider>();
-      _tracking = tracking;
-      tracking.addListener(_onTrackingChanged);
-      unawaited(tracking.initialize().then((_) => _maybePrompt()));
     });
-  }
-  @override
-  void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-    _tracking?.removeListener(_onTrackingChanged);
-    super.dispose();
-  }
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) {
-      unawaited(_resumeTracking());
-    }
-  }
-  Future<void> _resumeTracking() async {
-    final SleepTrackingProvider? tracking = _tracking;
-    if (tracking == null) {
-      return;
-    }
-    await tracking.checkOnResume();
-    await _maybePrompt();
-  }
-  void _onTrackingChanged() {
-    if (!mounted) {
-      return;
-    }
-    final SleepTrackingProvider? tracking = _tracking;
-    if (tracking != null && tracking.tapPending) {
-      tracking.clearTap();
-      unawaited(_handleNotificationTap(tracking));
-      return;
-    }
-    WidgetsBinding.instance.addPostFrameCallback((_) => _maybePrompt());
-  }
-  Future<void> _handleNotificationTap(SleepTrackingProvider tracking) async {
-    await tracking.checkOnResume();
-    await _maybePrompt(userInitiated: true);
-  }
-  Future<void> _maybePrompt({bool userInitiated = false}) async {
-    if (!mounted || _promptShowing) {
-      return;
-    }
-    final SleepTrackingProvider tracking =
-        context.read<SleepTrackingProvider>();
-    final SleepTrackingRecord? record = tracking.pending;
-    if (record == null || (!userInitiated && !tracking.needsPrompt)) {
-      return;
-    }
-    _promptShowing = true;
-    final SleepProvider sleep = context.read<SleepProvider>();
-    await tracking.markPrompted();
-    if (!mounted) {
-      _promptShowing = false;
-      return;
-    }
-    final bool confirmed = await showSleepConfirmDialog(
-      context,
-      record: record,
-    );
-    if (confirmed) {
-      await sleep.load();
-    }
-    _promptShowing = false;
   }
   Future<void> _refresh() async {
     final SoundProvider sound = context.read<SoundProvider>();
@@ -180,8 +105,6 @@ class _HomeTabState extends State<HomeTab> with WidgetsBindingObserver {
     final AuthProvider auth = context.watch<AuthProvider>();
     final SoundProvider sound = context.watch<SoundProvider>();
     final SleepProvider sleep = context.watch<SleepProvider>();
-    final SleepTrackingProvider tracking =
-        context.watch<SleepTrackingProvider>();
     final AudioItem? tonight =
         sound.localAudios.isEmpty ? null : sound.localAudios.first;
     final List<SleepSession> recent =
@@ -203,13 +126,6 @@ class _HomeTabState extends State<HomeTab> with WidgetsBindingObserver {
             ),
             children: <Widget>[
               HomeHeader(nickname: auth.nickname, meta: _meta(sleep)),
-              if (tracking.pending != null) ...<Widget>[
-                const SizedBox(height: AppSpacing.lg),
-                SleepPendingBanner(
-                  record: tracking.pending!,
-                  onTap: () => _maybePrompt(userInitiated: true),
-                ),
-              ],
               const SizedBox(height: AppSpacing.xxl),
               HomeTonightCta(
                 onTap: () => Navigator.pushNamed(context, AppRoutes.breathing),
