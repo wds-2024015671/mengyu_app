@@ -128,6 +128,8 @@ void main() {
     expect(find.byType(Slider), findsNothing);
     expect(find.byTooltip('收藏'), findsNothing);
     expect(find.byTooltip('更多'), findsNothing);
+    expect(find.byIcon(Icons.arrow_back_ios_new), findsOneWidget);
+    expect(find.byIcon(Icons.format_list_bulleted), findsOneWidget);
     await tester.tap(find.byTooltip('返回'));
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);

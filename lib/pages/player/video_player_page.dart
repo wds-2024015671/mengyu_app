@@ -189,6 +189,8 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
                   ),
                   child: PlayerTopBar(
                     onBack: () => Navigator.maybePop(context),
+                    backIcon: Icons.arrow_back_ios_new,
+                    onTrailing: _openTimer,
                   ),
                 ),
                 Expanded(
@@ -216,7 +218,6 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
                         onPrevious: () => _step(-1),
                         onNext: () => _step(1),
                         onTogglePlay: _toggle,
-                        onTimer: _openTimer,
                       ),
                       const SizedBox(height: AppSpacing.sm),
                       VideoTimeFooter(

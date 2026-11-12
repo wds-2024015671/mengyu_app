@@ -10,7 +10,6 @@ import '../../providers/player_provider.dart';
 import '../../providers/settings_provider.dart';
 import '../../providers/sound_provider.dart';
 import 'widgets/player_controls.dart';
-import 'widgets/player_exit_dialog.dart';
 import 'widgets/player_now_playing.dart';
 import 'widgets/player_time_footer.dart';
 import 'widgets/player_top_bar.dart';
@@ -79,21 +78,6 @@ class _PlayerPageState extends State<PlayerPage> {
       _lastError = null;
     }
   }
-  Future<void> _handleBack() async {
-    if (_player.isPlaying) {
-      final bool? start = await showSleepRecordingPrompt(context);
-      if (!mounted) return;
-      if (start == true) {
-        final bool started = await _player.startSleepRecording();
-        if (!started && mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('自动记录已关闭，可在设置中开启')),
-          );
-        }
-      }
-    }
-    if (mounted) { Navigator.maybePop(context); }
-  }
   Future<void> _openTimer() async {
     final int initial = _player.remaining?.inMinutes ??
         context.read<SettingsProvider>().defaultTimerMinutes;
@@ -159,7 +143,7 @@ class _PlayerPageState extends State<PlayerPage> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: <Widget>[
                   PlayerTopBar(
-                    onBack: _handleBack,
+                    onBack: () => Navigator.maybePop(context),
                   ),
                   Expanded(
                     child: Selector<PlayerProvider, bool>(

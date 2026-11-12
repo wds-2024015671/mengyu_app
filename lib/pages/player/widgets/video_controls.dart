@@ -14,7 +14,6 @@ class VideoControls extends StatelessWidget {
     required this.onPrevious,
     required this.onNext,
     required this.onTogglePlay,
-    required this.onTimer,
   });
 
   final double progress;
@@ -24,14 +23,12 @@ class VideoControls extends StatelessWidget {
   final VoidCallback onPrevious;
   final VoidCallback onNext;
   final VoidCallback onTogglePlay;
-  final VoidCallback onTimer;
 
   @override
   Widget build(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: <Widget>[
-        const SizedBox(width: 44, height: 44),
         _VideoIcon(
           tooltip: '上一首',
           icon: Icons.skip_previous,
@@ -74,12 +71,6 @@ class VideoControls extends StatelessWidget {
           icon: Icons.skip_next,
           color: canNext ? context.c.textSecondary : context.c.textTertiary,
           onPressed: canNext ? onNext : null,
-        ),
-        _VideoIcon(
-          tooltip: '定时',
-          icon: Icons.format_list_bulleted,
-          color: context.c.textSecondary,
-          onPressed: onTimer,
         ),
       ],
     );
