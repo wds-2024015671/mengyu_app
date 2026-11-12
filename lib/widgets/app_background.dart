@@ -2,10 +2,10 @@ import 'package:mengyu_app/core/theme/app_tokens.dart';
 import 'package:flutter/material.dart';
 
 
-/// v7 页面底图：唯一基底 #070B1A + 一层顶部径向 tint + 最多 5 个星点。
+/// v7 页面底图：唯一基底 #070B1A + 最多 5 个星点。
 ///
-/// 不再有星云、第二层光晕或全屏线性渐变；tint 由页面传入，
-/// 今晚/声屿/月迹/我的分别使用自己的登记色。
+/// 背景保持纯色，不再叠加径向 tint，避免不同 GPU 上出现可见的大圆环。
+/// tint 参数保留用于兼容旧调用，但不参与绘制。
 class AppBackground extends StatelessWidget {
   const AppBackground({
     super.key,
@@ -22,25 +22,11 @@ class AppBackground extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Color backgroundTint = tint ?? context.c.tintTonight;
     return ColoredBox(
       color: context.c.bgDeep,
       child: Stack(
         fit: StackFit.expand,
         children: <Widget>[
-          DecoratedBox(
-            decoration: BoxDecoration(
-              gradient: RadialGradient(
-                center: Alignment.topCenter,
-                radius: 1.2,
-                colors: <Color>[
-                  backgroundTint,
-                  backgroundTint.withOpacity(0),
-                ],
-                stops: const <double>[0, 0.55],
-              ),
-            ),
-          ),
           if (showStars)
             CustomPaint(painter: _StarPainter(context.c.star)),
           child,
