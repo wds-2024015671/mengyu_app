@@ -14,7 +14,7 @@ class HomeTonightCta extends StatelessWidget {
     final BorderRadius radius = BorderRadius.circular(AppRadius.card);
     return Semantics(
       button: true,
-      label: '开始今晚的仪式，约 15 分钟',
+      label: '开始今晚的仪式',
       child: Material(
         color: Colors.transparent,
         borderRadius: radius,
@@ -40,13 +40,6 @@ class HomeTonightCta extends StatelessWidget {
                         style: context.s.subtitle.copyWith(
                           color: context.c.onGold,
                           fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const SizedBox(height: AppSpacing.xs),
-                      Text(
-                        '约 15 分钟',
-                        style: context.s.caption.copyWith(
-                          color: context.c.onGoldMuted,
                         ),
                       ),
                     ],
