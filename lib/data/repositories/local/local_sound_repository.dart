@@ -10,7 +10,7 @@ import '../sound_repository.dart';
 /// 注意：
 /// 1) assetPath 对应 assets/audio/ 下的 6 个循环音文件，当前是随包发布的
 ///    20s 循环占位音，可替换为 CC0 实录而不用改代码。
-/// 2) 循环素材不写死 durationSec（保持 0），播放器读取真实时长，
+/// 2) 这些素材实际都是 20s，列表和播放器读取同一个 durationSec，
 ///    避免列表显示 10 分钟、实际文件只有 25 秒的不一致。
 class LocalSoundRepository implements SoundRepository {
   const LocalSoundRepository();
@@ -22,6 +22,7 @@ class LocalSoundRepository implements SoundRepository {
       category: '雨声',
       description: '细密的雨落在窗外，适合盖住杂念',
       assetPath: 'audio/rain_loop.wav',
+      durationSec: 20,
     ),
     AudioItem.builtIn(
       id: 'local_ocean',
@@ -29,6 +30,7 @@ class LocalSoundRepository implements SoundRepository {
       category: '海浪',
       description: '一波一波的潮汐，把呼吸放慢',
       assetPath: 'audio/ocean_loop.wav',
+      durationSec: 20,
     ),
     AudioItem.builtIn(
       id: 'local_stream',
@@ -36,6 +38,7 @@ class LocalSoundRepository implements SoundRepository {
       category: '森林',
       description: '山间溪水，适合睡前放空',
       assetPath: 'audio/stream_loop.wav',
+      durationSec: 20,
     ),
     AudioItem.builtIn(
       id: 'local_wind',
@@ -43,6 +46,7 @@ class LocalSoundRepository implements SoundRepository {
       category: '森林',
       description: '风穿过树梢，像很远的地方在呼吸',
       assetPath: 'audio/wind_loop.wav',
+      durationSec: 20,
     ),
     AudioItem.builtIn(
       id: 'local_fire',
@@ -50,6 +54,7 @@ class LocalSoundRepository implements SoundRepository {
       category: '森林',
       description: '木柴轻响，适合读书或发呆',
       assetPath: 'audio/fire_loop.wav',
+      durationSec: 20,
     ),
     AudioItem.builtIn(
       id: 'local_noise',
@@ -57,6 +62,7 @@ class LocalSoundRepository implements SoundRepository {
       category: '白噪',
       description: '稳定的底噪，屏蔽环境里的突发声响',
       assetPath: 'audio/noise_loop.wav',
+      durationSec: 20,
     ),
   ];
 

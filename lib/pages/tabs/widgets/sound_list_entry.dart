@@ -45,17 +45,17 @@ class SoundDemo {
 }
 
 const List<SoundDemo> kSoundDemos = <SoundDemo>[
-  SoundDemo('local_rain', '雨落窗台', 'ASMR', '45:00', Icons.grain,
+  SoundDemo('local_rain', '雨落窗台', 'ASMR', '00:20', Icons.grain,
       'audio/rain_loop.wav'),
-  SoundDemo('local_fire', '篝火噼啪', 'ASMR', '40:00',
+  SoundDemo('local_fire', '篝火噼啪', 'ASMR', '00:20',
       Icons.local_fire_department_outlined, 'audio/fire_loop.wav'),
-  SoundDemo('local_stream', '翻书轻响', 'ASMR', '30:00',
+  SoundDemo('local_stream', '翻书轻响', 'ASMR', '00:20',
       Icons.menu_book_outlined, 'audio/stream_loop.wav'),
-  SoundDemo('local_wind', '夜航低语', 'ASMR', '55:00',
+  SoundDemo('local_wind', '夜航低语', 'ASMR', '00:20',
       Icons.nightlight_outlined, 'audio/wind_loop.wav'),
-  SoundDemo('local_ocean', '海浪白噪', 'Nature', '50:00', Icons.waves,
+  SoundDemo('local_ocean', '海浪白噪', 'Nature', '00:20', Icons.waves,
       'audio/ocean_loop.wav'),
-  SoundDemo('local_noise', '夏夜虫鸣', 'Nature', '35:00',
+  SoundDemo('local_noise', '夏夜虫鸣', 'Nature', '00:20',
       Icons.bug_report_outlined, 'audio/noise_loop.wav'),
 ];
 

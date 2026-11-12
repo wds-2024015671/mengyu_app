@@ -22,7 +22,7 @@ List<SoundListEntry> buildSoundEntries({
       SoundListEntry(
         item: _audioFor(demo, sound.localAudios),
         title: demo.title,
-        category: demo.category,
+        category: '本地',
         durationLabel: demo.durationLabel,
         icon: demo.icon,
       ),
@@ -33,7 +33,7 @@ List<SoundListEntry> buildSoundEntries({
       SoundListEntry(
         item: media.toAudioItem(),
         title: media.title,
-        category: media.platform,
+        category: '本地',
         durationLabel: formatMediaDuration(media.durationMs),
         icon: Icons.library_music_outlined,
         privateMedia: media,
@@ -79,13 +79,14 @@ List<VideoEntry> buildVideoEntries({
 AudioItem _audioFor(SoundDemo demo, List<AudioItem> loaded) {
   for (final AudioItem item in loaded) {
     if (item.id == demo.id) {
-      return item.copyWith(title: demo.title, category: demo.category);
+      return item.copyWith(title: demo.title, category: '本地');
     }
   }
   return AudioItem.builtIn(
     id: demo.id,
     title: demo.title,
-    category: demo.category,
+    category: '本地',
     assetPath: demo.assetPath,
+    durationSec: 20,
   );
 }
